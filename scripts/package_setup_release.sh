@@ -100,5 +100,4 @@ exec bash "${PACKAGER}" \
   --project-file codegen_setup.h \
   --project-file README.md \
   --project-dir seeds \
-  --project-dir launcher_assets \
   "${EXTRA_PROJECT[@]}"
