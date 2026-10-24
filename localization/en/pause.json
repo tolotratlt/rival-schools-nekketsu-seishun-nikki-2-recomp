@@ -1,9 +1,10 @@
 {
- "_doc": "English for the in-battle pause menu drawn by the EXE (0x80023A58). Each label is a list of 24x12 / 48x12 pieces cut from the font page of /DAT2/OVER.TIZ (VRAM 960,256); the label table at 0x8008A0B8 points to [width units][piece count] + (col, row, units) triples. tools/localization/patch_pause.py renders these labels into the page area that held the Japanese pieces and rewrites the triples.",
+ "_doc": "English for the battle pause menus drawn by the EXE routine at 0x80023A58 (the EXE copy of the labels, and the copies in the exam and mini-game overlays, whose last entry is 戻る). Each label is a list of 24x12 / 48x12 pieces cut from the font page of /DAT2/OVER.TIZ (VRAM 960,256); the label table at 0x8008A0B8 points to [width units][piece count] + (col, row, units) triples. tools/localization/patch_pause.py renders these labels into the page area that held the Japanese pieces and rewrites the triples.",
  "labels": [
   {"ja": "1Pポーズ", "en": "1P PAUSE"},
   {"ja": "2Pポーズ", "en": "2P PAUSE"},
   {"ja": "つづける", "en": "CONTINUE"},
-  {"ja": "モードメニューに戻る", "en": "MODE SELECT"}
+  {"ja": "モードメニューに戻る", "en": "MODE SELECT"},
+  {"ja": "戻る", "en": "RETURN"}
  ]
 }

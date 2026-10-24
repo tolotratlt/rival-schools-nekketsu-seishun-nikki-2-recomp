@@ -120,7 +120,7 @@ overlays `.BIN` sont chargés par secteurs entiers) ; pas de place libre dans l'
 | League / Tournament | `PLSEL3/4.BIN`, `SELP3/4.BIZ` | B2 + A | atlas d'écran sans latin : image + chaînes |
 | 五輪祭 | `MINITTL0/1.BIZ`, `MINISEL.BIN` | A | à faire (image) |
 | Versus / Team / Co-op | (2ᵉ manette requise) | ? | à vérifier |
-| Pause en combat (`1Pポーズ / つづける / モードメニューに戻る`) | EXE `0x8008A070` + `/DAT2/OVER.TIZ` | A (morceaux 24×12) | **traduit** (`patch_pause.py` : `1P PAUSE / CONTINUE / MODE SELECT`) |
+| Pause en combat (`1Pポーズ / つづける / モードメニューに戻る`) | EXE `0x8008A070` + `/DAT2/OVER.TIZ` | A (morceaux 24×12) | **traduit** (`patch_pause.py` : `1P PAUSE / CONTINUE / MODE SELECT` ; les overlays des examens et mini-jeux `SIKENG21/22`, `SIKENGO1/2`, `MGAME01-03/05/06`, `SKHAY` ont leur propre copie du bloc (0x34 octets + table), dernier libellé `戻る` → `RETURN` ; vérifié en Arcade et Exam Drills) |
 | Pause Training et réglages du mannequin | `/DAT1/TRAIN.BIN` + atlas `/DAT2/CEFT3.BIZ` (VRAM 768,256) | A (cases 24×12) | **traduit** (`patch_training.py` : `MENU / CONTINUE / DUMMY SETUP / CHANGE CHARACTER / MODE SELECT`, `DUMMY / GUARD / UKEMI / BACK`, `STAND / CROUCH / JUMP / ON / OFF` ; positions x recalculées). HUD `トータルコンボダメージ / ダメージ` encore en japonais |
 | Titres 40×40 (Options, Sound Test…) | atlas `MENU.BIZ` bloc 3 | A | grandes lettres latines à dessiner |
 
