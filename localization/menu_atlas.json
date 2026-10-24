@@ -1,0 +1,53 @@
+{
+ "_doc": "Common menu glyph atlas of /DAT2/MENU.BIZ TIM #0 (VRAM 768,0), 20x20 cells, 12 per row. Menu string code = block*0x100 + row*0x10 + col; block 0/1/2 = texture page x 768/832/896. Transcribed visually from the TIM on 2026-10-24. '?' marks a cell whose reading is uncertain; '' = empty cell.",
+ "blocks": [
+  [
+   "1234567890AB",
+   "CDEFGHIJKLMN",
+   "OPQRSTUVWXYZ",
+   "abcdefghijkl",
+   "mnopqrstuvwx",
+   "yz@#%?&()/+*",
+   "><$!ー^'★☆←→。",
+   "、ー＝：あいうえおかきく",
+   "けこさしすせそたちつてと",
+   "なにぬねのはひふへほまみ",
+   "むめもやゆよらりるれろわ",
+   "をんがぎぐげござじずぜぞ"
+  ],
+  [
+   "だぢづでどばびぶべぼぱぴ",
+   "ぷぺぽぁぃぅぇぉっゃゅょ",
+   "アイウエオカキクケコサシ",
+   "スセソタチツテトナニヌネ",
+   "ノハヒフヘホマミムメモヤ",
+   "ユヨラリルレロワヲンヴガ",
+   "ギグゲゴザジズゼゾダヂヅ",
+   "デドバビブベボパピプペポ",
+   "ァィゥェォャュョッ○×",
+   "選抜人数初力回復何組参加",
+   "勝利期負対戦化択決定左右",
+   "記録操作変更主役相棒敗振"
+  ],
+  [
+   "強弱上下方向難度移動画面",
+   "投軸完全燃焼受身攻撃用協",
+   "団体使戻遊観無有押差根性",
+   "太陽学園中等部高教室屋上",
+   "五輪高校第一壊育館前裏門",
+   "臨海合宿所生徒会議室正足",
+   "外道河川敷裏工事現場図書",
+   "幻影空間英雄響子恭介将馬",
+   "雷蔵霞夏醍醐熱血隼岩新版",
+   "集↓↑交代条件付着地本固",
+   "〇□×△ⓁⓁⓇⓇ高低防御",
+   "必要時書終了・登苦手青春"
+  ]
+ ],
+ "notes": {
+  "0x066": "block 0 row 6 col 6 holds two small marks (raised dot + low dot); used here as the apostrophe",
+  "0x2A0": "block 2 row 10 cols 0-7 are button icons: circle, square, cross, triangle, L1, L2, R1, R2",
+  "0x2B6": "block 2 row 11 col 6 is '・' (small dot); col 7 is 登",
+  "0x18B": "block 1 row 8 col 11 is empty"
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "_doc": "English menu text for NSN2 (SLPS-02120). One entry per on-screen text. 'kind' A = pre-rendered texture label (image edit at identical size), B = atlas glyph string, C = dialogue-system message. Owner rule: textures keep their exact size and are never stretched; if the English does not fit comfortably, use the 'fallback' wording.",
+ "glossary": {
+  "熱血青春日記2": {"en": "Youth Diary 2", "why": "Literal 'Hot-Blooded Youth Diary 2', shortened to fit menu labels; used consistently everywhere."},
+  "一人で遊ぶ": {"en": "Arcade", "why": "1-player arcade mode, as in Rival Schools USA."},
+  "対戦": {"en": "Versus", "why": "Rival Schools USA term."},
+  "リーグ戦": {"en": "League", "why": "Rival Schools USA term."},
+  "団体戦": {"en": "Team Battle", "why": "Rival Schools USA term."},
+  "トーナメント戦": {"en": "Tournament", "why": "Rival Schools USA term."},
+  "協力戦": {"en": "Cooperation", "fallback": "Co-op", "why": "Rival Schools USA used 'Cooperation'; 'Co-op' if the label is too tight."},
+  "トレーニング": {"en": "Training"},
+  "試験に出る実技'99": {"en": "Exam Drills '99", "why": "Practical-exam practice mode; keeps the '99 tag."},
+  "五輪祭": {"en": "Gorin Fest", "why": "Gorin is the school name (Gorin High); 祭 = festival."},
+  "EDIT登録": {"en": "EDIT Entry", "fallback": "EDIT Reg.", "why": "Registering EDIT characters."},
+  "おまけ": {"en": "Extras"},
+  "記録": {"en": "Records", "why": "Memory card save/load menu."},
+  "オプション": {"en": "Options"},
+  "現在のポイント": {"en": "Points", "why": "Current point total; short to fit the label strip."},
+  "購買部": {"en": "School Store", "fallback": "Store"},
+  "主役": {"en": "Leader", "why": "Main character of a pair, as in Rival Schools USA."},
+  "相棒": {"en": "Partner", "why": "Rival Schools USA term."},
+  "キャラクターセレクト": {"en": "Character Select"}
+ },
+ "screens": {
+  "MODE_SELECT": {
+   "files": ["/DAT2/MENU.BIZ", "/DAT1/MODESEL.BIN"],
+   "labels": {
+    "kind": "A",
+    "source": "MENU.BIZ TIM #2 (VRAM 512,256), two label sizes + list column",
+    "items": [
+     {"ja": "熱血青春日記2", "en": "Youth Diary 2"},
+     {"ja": "一人で遊ぶ", "en": "Arcade"},
+     {"ja": "対戦", "en": "Versus"},
+     {"ja": "リーグ戦", "en": "League"},
+     {"ja": "団体戦", "en": "Team Battle"},
+     {"ja": "トーナメント戦", "en": "Tournament"},
+     {"ja": "協力戦", "en": "Cooperation", "fallback": "Co-op"},
+     {"ja": "トレーニング", "en": "Training"},
+     {"ja": "試験に出る実技'99", "en": "Exam Drills '99"},
+     {"ja": "五輪祭", "en": "Gorin Fest"},
+     {"ja": "EDIT登録", "en": "EDIT Entry", "fallback": "EDIT Reg."},
+     {"ja": "おまけ", "en": "Extras"},
+     {"ja": "記録", "en": "Records"},
+     {"ja": "オプション", "en": "Options"},
+     {"ja": "現在のポイント", "en": "Points"}
+    ]
+   },
+   "descriptions": {
+    "kind": "A",
+    "source": "MENU.BIZ TIM #3-#16 (VRAM 832,256), 176x112 px each, palette supplied in VRAM; Japanese uses up to 5 lines",
+    "items": [
+     {"tim": 3, "mode": "一人で遊ぶ", "ja": "通常の一人プレイ用モードです\nもちろん乱入対戦も可能！",
+      "en": "The standard 1-player mode.\nChallengers can join in!"},
+     {"tim": 4, "mode": "対戦", "ja": "2人対戦の専用モードです",
+      "en": "A mode just for\n2-player battles."},
+     {"tim": 5, "mode": "試験に出る実技'99", "ja": "『熱血青春日記2』で出題される\n実技試験の練習ができます\n「基礎のおさらい」で\n基本テクニックも学べるぞ!!",
+      "en": "Practice the practical\nexams from Youth Diary 2.\nLearn the basics too\nin \"Basics Review\"!!"},
+     {"tim": 6, "mode": "オプション", "ja": "ボタン設定や難易度やゲームの\nルールを自由に変更できます",
+      "en": "Freely change buttons,\ndifficulty and the\ngame rules."},
+     {"tim": 7, "mode": "記録", "ja": "メモリーカードのデータを\nセーブしたりロードしたり\nできます",
+      "en": "Save and load your\ndata on a Memory Card."},
+     {"tim": 8, "mode": "おまけ", "ja": "ゲームをしてポイントを\nためよう！\n購買部でいろんなおまけ\nが買えるぞ！\nポケステのダウンロード\nはここで！",
+      "en": "Play to earn points!\nBuy all sorts of extras\nat the School Store!\nPocketStation\ndownloads are here!"},
+     {"tim": 9, "mode": "熱血青春日記2", "ja": "ゲーム中のキャラクター達と\n学園生活を共にする、\n育成シミュレーションゲームです\n各イベントもフルリニューアル！",
+      "en": "A raising sim where you\nshare school life with\nthe game's characters.\nEvery event is remade!"},
+     {"tim": 10, "mode": "協力戦", "ja": "2人で協力して敵を倒すモード\n委員長が2人の相性を\n占ってくれるぞ！\n4人同時プレイもできます",
+      "en": "Team up to beat the foe!\nThe class rep reads\nyour compatibility!\nUp to 4 players at once."},
+     {"tim": 11, "mode": "団体戦", "ja": "2人～4人までの\nキャラクターを\n選んで1本交代の\n団体戦ができます",
+      "en": "Pick 2 to 4\ncharacters for a\none-round-each\nteam battle."},
+     {"tim": 12, "mode": "トーナメント戦", "ja": "最大8人までの\nトーナメント戦が\nできます",
+      "en": "Tournament battles\nfor up to 8 players."},
+     {"tim": 13, "mode": "リーグ戦", "ja": "2人～6人までの\nキャラクターを\n選んで総当たり戦が\nできます",
+      "en": "Pick 2 to 6\ncharacters for a\nround-robin league."},
+     {"tim": 14, "mode": "五輪祭", "ja": "『熱血青春日記2』に出てくる\nミニゲームが練習できます",
+      "en": "Practice the mini-games\nfrom Youth Diary 2."},
+     {"tim": 15, "mode": "EDIT登録", "ja": "『熱血青春日記2』のセーブデータから\nEDITキャラクターを登録して\nゲーム中で使えるようにします\nパスワード登録やCPU時の\n戦術設定など新機能も充実!!",
+      "en": "Register EDIT characters\nfrom Youth Diary 2 saves\nto use them in battle.\nNew: passwords and CPU\ntactics settings!!"},
+     {"tim": 16, "mode": "トレーニング", "ja": "連続技や必殺技のトレーニング\nができます\nEDITキャラも使えるぞ！",
+      "en": "Practice combos and\nspecial moves.\nEDIT characters too!"}
+    ]
+   }
+  }
+ }
+}
