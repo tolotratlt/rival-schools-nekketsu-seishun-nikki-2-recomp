@@ -81,3 +81,6 @@ starvation_dump.jsonl
 /*.png
 !/catalog_identity.json
 !/disc_probe.json
+
+# Localization work area: extracted game data, VRAM/RAM dumps, captures (never commit)
+/localization/work/
