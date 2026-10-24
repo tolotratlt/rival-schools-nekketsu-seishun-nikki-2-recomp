@@ -85,18 +85,43 @@ outils de `02_dialogue_engine.md` (≤ 19 caractères par ligne, ≤ 4 lignes).
    sur une **copie** du disque (`localization/work/testdisc/`) ; en livraison,
    via un `[[overlay]]` disque d'un paquet de mod.
 
-## Inventaire (état)
+## Formats de chaînes rencontrés
+
+| Format | Où | Encodage d'un glyphe | Fin |
+|---|---|---|---|
+| B1 | `NEWOPT.BIN`, EXE, `MGTIT.BIZ`, `KANRI.BIN` | u16 `bloc*0x100 + ligne*0x10 + col` (atlas commun ; kanji propres à l'écran au-delà de la ligne 9 du bloc 1) ; `0xFFF` = espace ; `0xFFxx` = glyphe d'un atlas d'écran (`EDITMOJI`) | compteur u16 en tête |
+| B2 | `PLSEL3.BIN` (League) | 2 octets `(col, ligne)` dans l'atlas de l'écran | compteur u8 en tête |
+| B3 | `KOUBAI.BIN` (boutique) | 3 octets `(bloc, col, ligne)` | `0x80` saut de ligne, `0x81` fin |
+
+Outils : `nsn2menu.py` (B1 : décodage, reconstruction de pool avec relocalisation
+des pointeurs, chaînes non traduites figées à leur adresse, garde-fou contre
+l'effacement de données hors chaînes), `patch_newopt.py`, `patch_exe_strings.py`,
+`patch_mgtit.py`, `patch_overlay.py` (générique, configuration par fichier).
+Place disponible : pool d'origine + fin inutilisée du dernier secteur (les
+overlays `.BIN` sont chargés par secteurs entiers) ; pas de place libre dans l'EXE.
+
+## Inventaire (état au 24 octobre 2026)
 
 | Écran | Fichiers | Type | Statut |
 |---|---|---|---|
-| Boot (pas de sauvegarde) | ? | C probable | à confirmer |
-| Titre | `/DAT2/TITLE.BIZ` (1 TIM 8 bpp, (512,0)) | A | déjà en anglais (`PRESS START BUTTON`) |
-| `MODE SELECT` | `MENU.BIZ`, `MODESEL.BIN` | A | inventorié (ci-dessus) |
-| `リーグ戦` (nombre d'équipes) | `PLSEL3.BIN`, `SELP3.BIZ` | B | mécanisme prouvé |
-| Autres entrées de `MODE SELECT`, `オプション`, `おまけ`, `記録`, `EDIT登録` | `PLSEL1–5.BIN`, `NEWOPT.BIN`, … | ? | à visiter |
-| Menus du mode histoire (statut, sauvegarde…) | `MGK04.BIZ` (groupe 5) | C | identifié |
+| Titre | `TITLE.BIZ` | A | déjà en anglais |
+| Démarrage / carte mémoire | EXE | B1 | **traduit** (pool EXE) |
+| `MODE SELECT` | `MENU.BIZ` TIM #2, #3-#16 | A | textes anglais rédigés (`menus.json`), image à faire |
+| Options, Game System, test son | `NEWOPT.BIN` | B1 | **traduit** (titres 40×40 restés en japonais) |
+| Records | EXE | B1 | **traduit** |
+| Aide des réglages système | `OPTINFO.TIZ` (5 TIM) | A | à faire (image) |
+| Titre du mode histoire | `MGTIT.BIZ` | B1 | **traduit** |
+| EDIT登録 | `KANRI.BIN` (+ `EDITMOJI.TIZ`) | B1 | **traduit** (boutons `0xFFxx` en japonais) |
+| Mot de passe EDIT | `PASS.BIN` | ? | à analyser |
+| おまけ (menu) | `KOUBAI0.TIZ` | A | à faire (image) |
+| Boutique | `KOUBAI.BIN` | B3 | format prouvé, ~100 chaînes à traduire |
+| Sélection des personnages (1P, Training) | `SELP1.BIZ`, `PLSEL1.BIN` | A (+ noms) | à faire |
+| League / Tournament | `PLSEL3/4.BIN`, `SELP3/4.BIZ` | B2 + A | atlas d'écran sans latin : image + chaînes |
+| 五輪祭 | `MINITTL0/1.BIZ`, `MINISEL.BIN` | A | à faire (image) |
+| Versus / Team / Co-op | (2ᵉ manette requise) | ? | à vérifier |
+| Titres 40×40 (Options, Sound Test…) | atlas `MENU.BIZ` bloc 3 | A | grandes lettres latines à dessiner |
 
 Méthode pour un nouvel écran : capture + dump VRAM + `dma_cdrom_history`
 (fichiers chargés) + anneau GP0 (`gpu_frame_dump`) pour voir quelle page VRAM
 dessine le texte ; `wtrace_range` sur un paquet de sprite pour remonter au code
-et à la chaîne (voir §B).
+et à la chaîne (`localization/work/tools/glyphtrace.py`).
