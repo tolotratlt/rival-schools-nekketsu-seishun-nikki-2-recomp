@@ -48,7 +48,6 @@ psxrecomp_add_game_runtime(psx-runtime
     EXE_NAME "Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2"
     DEFAULT_GAME_CONFIG_PATH "game.toml"
     MAX_PLAYERS 2
-    # LAUNCHER_BOXART "${CMAKE_CURRENT_SOURCE_DIR}/launcher_assets/img/boxart.tga"
     APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/psxrecomp.ico"
     GEN_MARKER "generated/SLPS_021.20_dispatch.c"
     GEN_FULL_GLOB "generated/SLPS_021.20_full_*.c"
