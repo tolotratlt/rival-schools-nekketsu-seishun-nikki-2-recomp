@@ -107,6 +107,7 @@ overlays `.BIN` sont chargés par secteurs entiers) ; pas de place libre dans l'
 | Titre | `TITLE.BIZ` | A | déjà en anglais |
 | Démarrage / carte mémoire | EXE | B1 | **traduit** (pool EXE) |
 | `MODE SELECT` | `MENU.BIZ` TIM #2, #3-#16 | A | **traduit** (`patch_menu_biz.py` ; Versus, Team, Co-op non vérifiés en jeu : 2ᵉ manette requise) |
+| Sortie PC depuis MODE SELECT | `runtime/menu_exit.cpp` | UI hôte | entrée Exit après Options ; navigation et fermeture contrôlées hors écran |
 | Options, Game System, test son | `NEWOPT.BIN` | B1 | **traduit** (titres 40×40 restés en japonais) |
 | Records | EXE | B1 | **traduit** |
 | Aide des réglages système | `OPTINFO.TIZ` (5 TIM) | A | à faire (image) |

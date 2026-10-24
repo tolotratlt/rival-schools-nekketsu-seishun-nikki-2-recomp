@@ -5,6 +5,8 @@
 
 #include "psxrecomp_codegen_host.h"
 
+extern void nsn2_register_exit_menu(void);
+
 static const PsxrecompCodegenHostConfig kCodegenConfig = {
     .display_name = "Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2",
     .project_root_env = "SHIRITSU_JUSTICE_GAKUEN__NEKKETSU_SEISHUN_NIKKI_2_PROJECT_ROOT",
@@ -40,6 +42,7 @@ void psx_game_codegen_relaunch_or_exit(const char* disc_path) {
 }
 
 void psx_game_codegen_forward_if_built(int argc, char** argv) {
+    nsn2_register_exit_menu();
     psxrecomp_codegen_host_forward_if_built(&kCodegenConfig, argc, argv);
 }
 

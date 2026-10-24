@@ -54,6 +54,23 @@ psxrecomp_add_game_runtime(psx-runtime
     CODEGEN_SETUP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/codegen_setup.c"
 )
 
+# Game-owned desktop UI extension using the framework's existing frame hook.
+target_sources(psx-runtime PRIVATE runtime/menu_exit.cpp)
+
+option(NSN2_BUILD_TESTS "Build game-owned UI behavior tests" OFF)
+if(NSN2_BUILD_TESTS)
+    enable_testing()
+    add_executable(menu-exit-test tests/menu_exit_test.cpp)
+    target_include_directories(menu-exit-test PRIVATE runtime)
+    # Keep behavior checks enabled in Release builds too.
+    if(MSVC)
+        target_compile_options(menu-exit-test PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(menu-exit-test PRIVATE -UNDEBUG)
+    endif()
+    add_test(NAME menu-exit COMMAND menu-exit-test)
+endif()
+
 # Stage runtime configs next to the exe for direct build/ launches. Only copy
 # files that exist — never fail POST_BUILD when game_options.toml is absent.
 foreach(_PSX_RUNTIME_CONFIG game.toml game_options.toml)
