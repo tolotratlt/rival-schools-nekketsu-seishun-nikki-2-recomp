@@ -121,7 +121,7 @@ overlays `.BIN` sont chargés par secteurs entiers) ; pas de place libre dans l'
 | 五輪祭 | `MINITTL0/1.BIZ`, `MINISEL.BIN` | A | à faire (image) |
 | Versus / Team / Co-op | (2ᵉ manette requise) | ? | à vérifier |
 | Pause en combat (`1Pポーズ / つづける / モードメニューに戻る`) | EXE `0x8008A070` + `/DAT2/OVER.TIZ` | A (morceaux 24×12) | **traduit** (`patch_pause.py` : `1P PAUSE / CONTINUE / MODE SELECT`) |
-| Pause Training (`メニュー / トレーニング続行 / シチュエーション設定 / キャラクター変更 / モードメニューに戻る`) | `/DAT1/TRAIN.BIN` (overlay) | atlas d'écran | à faire : glyphes ~16 px composés en VRAM (768,256), avec les libellés du HUD `トータルコンボダメージ / ダメージ` ; chaînes absentes en Shift-JIS et en codes B1 dans `TRAIN.BIN` |
+| Pause Training et réglages du mannequin | `/DAT1/TRAIN.BIN` + atlas `/DAT2/CEFT3.BIZ` (VRAM 768,256) | A (cases 24×12) | **traduit** (`patch_training.py` : `MENU / CONTINUE / DUMMY SETUP / CHANGE CHARACTER / MODE SELECT`, `DUMMY / GUARD / UKEMI / BACK`, `STAND / CROUCH / JUMP / ON / OFF` ; positions x recalculées). HUD `トータルコンボダメージ / ダメージ` encore en japonais |
 | Titres 40×40 (Options, Sound Test…) | atlas `MENU.BIZ` bloc 3 | A | grandes lettres latines à dessiner |
 
 Méthode pour un nouvel écran : capture + dump VRAM + `dma_cdrom_history`

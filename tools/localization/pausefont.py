@@ -5,7 +5,11 @@ fill; the yellow and cyan CLUTs at VRAM (96,511) and (448,511) both rise in
 brightness over 5..15).
 
 render(text, width, font=..., size=...) -> list of rows (lists of indices),
-height 12, text centred in `width` pixels. Raises ValueError if it does not fit.
+height 12, text placed in `width` pixels (align "centre", "left" or "right").
+Raises ValueError if it does not fit.
+pack(labels, cols, rows, align=None) renders labels at the smallest width in 24 px units
+and places them in a grid of 24x12 cells, splitting a label into pieces when
+no row has room for it whole.
 """
 from PIL import Image, ImageFilter, ImageFont, ImageDraw
 
@@ -16,7 +20,7 @@ TRACK = 1
 OUTLINE, FILL_LO, FILL_HI = 1, 5, 15
 
 
-def render(text, width, font=FONT, size=SIZE, track=TRACK):
+def render(text, width, font=FONT, size=SIZE, track=TRACK, align="centre"):
     face = ImageFont.truetype(font, size)
     # Lay the text out glyph by glyph so letter spacing can be adjusted.
     xs, x = [], 1
@@ -28,7 +32,7 @@ def render(text, width, font=FONT, size=SIZE, track=TRACK):
         raise ValueError("%r is %d px wide, slot is %d" % (text, w, width))
     mask = Image.new("L", (width, HEIGHT), 0)
     d = ImageDraw.Draw(mask)
-    left = (width - w) // 2
+    left = {"centre": (width - w) // 2, "left": 0, "right": width - w}[align]
     top = (HEIGHT - 2 - (face.getbbox("A")[3] - face.getbbox("A")[1])) // 2 - face.getbbox("A")[1] + 1
     for ch, cx in zip(text, xs):
         d.text((left + cx, top), ch, font=face, fill=255)
@@ -49,3 +53,44 @@ def render(text, width, font=FONT, size=SIZE, track=TRACK):
                 row.append(0)
         rows.append(row)
     return rows
+
+
+UNIT = 24
+
+
+def pack(labels, cols, rows, align=None):
+    """Returns, per label, ([(col, row, units, pixel rows), ...], width units).
+    `align` optionally gives a render alignment per label."""
+    free = [[True] * cols for _ in range(rows)]
+
+    def take(units):
+        for r in range(rows):
+            for c in range(cols - units + 1):
+                if all(free[r][c:c + units]):
+                    free[r][c:c + units] = [False] * units
+                    return c, r
+        return None
+
+    out = []
+    for i, text in enumerate(labels):
+        units = 1
+        while True:
+            try:
+                img = render(text, units * UNIT, align=align[i] if align else "centre")
+                break
+            except ValueError:
+                units += 1
+        pieces, x = [], 0
+        while x < units:
+            n = min(cols, units - x)
+            spot = take(n)
+            while spot is None and n > 1:
+                n -= 1
+                spot = take(n)
+            if spot is None:
+                raise SystemExit("font area is full at %r" % text)
+            c, r = spot
+            pieces.append((c, r, n, [row[x * UNIT:(x + n) * UNIT] for row in img]))
+            x += n
+        out.append((pieces, units))
+    return out

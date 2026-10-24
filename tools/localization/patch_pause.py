@@ -48,38 +48,6 @@ def write_file(f, lba, data):
         f.write(bytes(data[k:k + 2048]))
 
 
-def layout(labels):
-    """Render the labels and pack their pieces into the area.
-    Returns (pieces per label as (col, row, units, pixel rows), width units)."""
-    free = [[True] * AREA_COLS for _ in range(AREA_ROWS)]
-
-    def take(units):
-        for r in range(AREA_ROWS):
-            for c in range(AREA_COLS - units + 1):
-                if all(free[r][c:c + units]):
-                    free[r][c:c + units] = [False] * units
-                    return c, r
-        raise SystemExit("pause font area is full")
-
-    out = []
-    for text in labels:
-        units = 1
-        while True:
-            try:
-                rows = pausefont.render(text, units * UNIT)
-                break
-            except ValueError:
-                units += 1
-        pieces, x = [], 0
-        while x < units:
-            n = min(2, units - x)
-            c, r = take(n)
-            pieces.append((c, r, n, [row[x * UNIT:(x + n) * UNIT] for row in rows]))
-            x += n
-        out.append((pieces, units))
-    return out
-
-
 def main(stock, target):
     with open(os.path.join(REPO, "localization", "en", "pause.json"), encoding="utf-8") as fh:
         labels = [e["en"] for e in json.load(fh)["labels"]]
@@ -101,7 +69,7 @@ def main(stock, target):
         for u in range(AREA_U, AREA_U + AREA_COLS * UNIT):
             put(u, v, 0)
     blob, ptrs = bytearray(), []
-    for pieces, units in layout(labels):
+    for pieces, units in pausefont.pack(labels, AREA_COLS, AREA_ROWS):
         ptrs.append(LABELS[0] + len(blob))
         blob += bytes([units, len(pieces)])
         for c, r, n, rows in pieces:
