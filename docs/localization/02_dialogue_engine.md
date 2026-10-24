@@ -192,15 +192,57 @@ correctes (`captures/poc_next_lines.png`). Confirmé au passage :
 - `0x3000` = **saut de ligne**, `0x3001` = fin de bulle ;
 - environ **19–20 caractères latins par ligne** (cellules de 20 px).
 
-## 7. Prochaines questions (ordre conseillé)
+## 7. Structure du bloc script et répliques de longueur libre (prouvé)
+
+Bloc script de `MGK04.BIZ` décompressé (offset `0x31000`, RAM `0x80101000`) :
+
+```
+0x31000  table maîtresse : 7 × u32 (adresse de chaque table de groupe), puis 0x00000000
+0x31020  groupe 0 : répliques (u16), chacune alignée sur 4 octets
+0x3235C  table du groupe 0 : 57 × u32 (adresse de chaque réplique), puis 0xFFFFFFFF
+0x32444  groupe 1 : répliques …   table @0x33780 (57)  puis 0xFFFFFFFF
+         groupes 2–6 : tables @0x35938 (170), @0x36474 (38), @0x36DE8 (38),
+                       @0x373F0 (31), @0x37C20 (100), chacune fermée par 0xFFFFFFFF
+0x37DB4  zéros jusqu'à 0x4A000 (bloc suivant) : emplacement de ~100 Ko, 28 Ko utilisés
+```
+
+- 491 répliques, **toutes alignées sur 4 octets** ; une réplique se termine par
+  `0x3001`, suivi d'un mot `0x0000` de remplissage si besoin.
+- Aucun mot de l'EXE ne pointe dans cette zone ; seules les tables du bloc la
+  référencent (adresses absolues, chargement en `0x800D0000`).
+- Les groupes 0 et 1 contiennent le même texte (variantes d'un même événement).
+- Les écrans de choix sont aussi des répliques (ex. groupe 0 n°4 :
+  `ゲームの説明…{3000}キャラの…`), avec un code `0x061E` répété qui sert
+  probablement d'espacement : à étudier avant de les traduire.
+
+Outils : `tools/localization/nsn2script.py` (`parse`, `build`, `replace`) —
+reconstruction **identique à l'octet** du bloc d'origine ; `nsn2text.py`
+(`encode` anglais → codes, `decode` codes → texte).
+
+**Preuve de concept 2** (`localization/work/tools/poc2_longer.py`, copie du
+disque) : répliques 0–2 des groupes 0 et 1 remplacées par un anglais **plus
+long** que le japonais (bloc +336 octets, pointeurs recalculés, fichier
+recompressé à taille exacte). Résultat en jeu :
+
+- `captures/poc2_msg0_4lines.png` : **4 lignes de 19 caractères** tiennent dans
+  la bulle (« Welcome to Nekketsu / Seishun Nikki 2! / Let's have a great /
+  year together. ») ; la 4ᵉ ligne touche le bas du cadre ;
+- `captures/poc2_msg2.png`, `poc2_next.png` : répliques 1 et 2 correctes, la
+  réplique japonaise suivante et l'écran de choix s'affichent normalement.
+
+Règle de mise en page établie : **≤ 19 caractères par ligne, ≤ 4 lignes par
+réplique**.
+
+## 8. Prochaines questions (ordre conseillé)
 
 1. Les autres scènes : quels fichiers `/DAT2/` (le même texte existe dans
    `MGC01`, `MGC03`, `MGG04`, `MGG04O`, `MGK09`…) et le décalage du script dans
    chacun. La disposition `0x800D0000` / police à `0x180` est-elle commune ?
-2. Structure du script : la table de pointeurs en tête de bloc
-   (`0x8010235C`, `0x80103780`…) et son rôle exact, pour pouvoir **allonger** les
-   répliques (au lieu d'une longueur égale) en recalculant les pointeurs.
-3. Couleur `0x3003 <arg>` (le titre n'est pas resté jaune avec `0x0000`).
+2. Extraction lisible pour les traducteurs : les kanji `≥ 0x0129` sont propres à
+   chaque fichier (glyphes dans le TIM en tête de fichier) ; il faut les
+   identifier (rapprochement des glyphes entre fichiers + table manuelle).
+3. Couleur `0x3003 <arg>` (le titre n'est pas resté jaune avec `0x0000`) et
+   code `0x061E` des écrans de choix.
 4. Nombre de lignes par bulle, noms de locuteurs, choix.
 5. Livraison : un `[[overlay]]` disque par fichier `/DAT2/` modifié (même taille,
    même LBA) dans un paquet de mod `mods/preloaded/packages/`. Le contenu traduit
