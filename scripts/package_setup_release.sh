@@ -5,7 +5,7 @@
 # Usage:
 #   scripts/package_setup_release.sh <build-dir> <artifact-tag> [recompiler-build-dir]
 #
-# Writes: dist/sjgnsn-<VERSION>-<artifact-tag>.zip
+# Writes: dist/rival-schools-sjgnsn-<VERSION>-<artifact-tag>.zip
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -87,7 +87,7 @@ exec bash "${PACKAGER}" \
   --root "${ROOT}" \
   --build-dir "${BUILD_DIR}" \
   --artifact "${ARTIFACT_TAG}" \
-  --zip-prefix sjgnsn \
+  --zip-prefix rival-schools-sjgnsn \
   --exe-name Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2   --omit-openbios \
   --display-name "Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2" \
   --recompiler-build "${RECOMPILER_BUILD}" \

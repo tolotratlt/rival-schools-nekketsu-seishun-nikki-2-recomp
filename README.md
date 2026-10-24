@@ -38,7 +38,7 @@ This kit uses the same pinned framework and launcher versions.
 
 ## Setup
 
-1. Download the Windows setup ZIP (`sjgnsn-<version>-windows-x64.zip`) from
+1. Download the Windows setup ZIP (`rival-schools-sjgnsn-<version>-windows-x64.zip`) from
    [Releases](https://github.com/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp/releases)
    and extract it into a writable folder.
 2. Install Python 3 if it is not already installed.
@@ -158,7 +158,7 @@ The configure output must say `BIOS backends linked: (none)`. Before
 publishing, remove third-party game images the framework docs carry:
 
 ```bash
-zip -d dist/sjgnsn-*-windows-x64.zip 'psxrecomp/docs/assets/games/*' \
+zip -d dist/rival-schools-sjgnsn-*-windows-x64.zip 'psxrecomp/docs/assets/games/*' \
   'psxrecomp/docs/assets/widescreen/*' 'recomp-ui/assets/consoles/genesis/img/boxart_*'
 ```
 
