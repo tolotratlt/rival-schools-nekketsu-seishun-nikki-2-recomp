@@ -48,6 +48,12 @@ POSITIONS = {
     0x800A207C: (13, "right"), 0x800A2080: (14, "right"),        # ukemi
 }
 CENTRE_X, RIGHT_X = 256, 376
+# Combo HUD, drawn at x 32 with three pieces per line read from these
+# addresses: (col, row, units) with u = col * 16, v = 112 + row * 8,
+# w = units * 16. The glyphs sit in u 0..159, v 112..119 of the atlas.
+HUD_LINES = (0x800A216C, 0x800A2178)
+HUD_V, HUD_H, HUD_CELL, HUD_CELLS = 112, 8, 16, 10
+HUD_FONT, HUD_SIZE = r"C:\Windows\Fonts\tahomabd.ttf", 8
 UNIT, ROW_H = 24, 12
 # Stock atlas rows 0-5, read from the TIM; used to name the stock labels.
 STOCK_ROWS = ["メニュートレング続行", "ャコマドを表示シチエ", "変更ョ設定キラクモに",
@@ -110,6 +116,30 @@ def main(stock, target):
         blob += bytes(-len(blob) % 4)   # keep the stock 4-byte alignment
     if len(blob) > STRINGS[1] - STRINGS[0]:
         raise SystemExit("labels need %d bytes, room for %d" % (len(blob), STRINGS[1] - STRINGS[0]))
+    # HUD: line 1 is "<prefix> <word>", line 2 "<word>" alone; the word gets
+    # its own cells right after the prefix so both lines share them.
+    hud = json.load(open(os.path.join(REPO, "localization", "en", "training.json"),
+                         encoding="utf-8"))["hud"]
+    for u in range(HUD_CELLS * HUD_CELL):
+        for v in range(HUD_V, HUD_V + HUD_H):
+            put(u, v, 0)
+    p = 1
+    while True:
+        try:
+            prefix = pausefont.render(hud["prefix"] + " ", p * HUD_CELL, HUD_FONT, HUD_SIZE, 0, "left", HUD_H)
+            break
+        except ValueError:
+            p += 1
+    word = pausefont.render(hud["word"], 3 * HUD_CELL, HUD_FONT, HUD_SIZE, 0, "left", HUD_H)
+    if p + 3 > HUD_CELLS:
+        raise SystemExit("HUD text needs %d cells, %d available" % (p + 3, HUD_CELLS))
+    for u0, img in ((0, prefix), (p * HUD_CELL, word)):
+        for y, row in enumerate(img):
+            for x, idx in enumerate(row):
+                put(u0 + x, HUD_V + y, idx)
+    # Three pieces per line: (col, row, units).
+    hud_pieces = ([(0, 0, p // 2), (p // 2, 0, p - p // 2), (p, 0, 3)],
+                  [(p + k, 0, 1) for k in range(3)])
     packed = nsn2lz.compress_exact(bytes(raw), atlas_size)
     assert nsn2lz.decompress(packed)[0] == bytes(raw)
 
@@ -120,6 +150,8 @@ def main(stock, target):
         w = width[stock_ja[slot]]
         x = CENTRE_X - w // 2 if anchor == "centre" else RIGHT_X - w
         struct.pack_into("<h", code, addr - BASE, x)
+    for addr, pieces in zip(HUD_LINES, hud_pieces):
+        code[addr - BASE:addr - BASE + 9] = bytes(b for p in pieces for b in p)
     with open(target, "r+b") as f:
         write_file(f, atlas_lba, packed)
         write_file(f, code_lba, code)

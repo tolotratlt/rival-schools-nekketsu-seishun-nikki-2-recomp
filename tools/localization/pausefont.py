@@ -5,7 +5,7 @@ fill; the yellow and cyan CLUTs at VRAM (96,511) and (448,511) both rise in
 brightness over 5..15).
 
 render(text, width, font=..., size=...) -> list of rows (lists of indices),
-height 12, text placed in `width` pixels (align "centre", "left" or "right").
+height 12 (or `height`), text placed in `width` pixels (align "centre", "left" or "right").
 Raises ValueError if it does not fit.
 pack(labels, cols, rows, align=None) renders labels at the smallest width in 24 px units
 and places them in a grid of 24x12 cells, splitting a label into pieces when
@@ -20,7 +20,7 @@ TRACK = 1
 OUTLINE, FILL_LO, FILL_HI = 1, 5, 15
 
 
-def render(text, width, font=FONT, size=SIZE, track=TRACK, align="centre"):
+def render(text, width, font=FONT, size=SIZE, track=TRACK, align="centre", height=HEIGHT):
     face = ImageFont.truetype(font, size)
     # Lay the text out glyph by glyph so letter spacing can be adjusted.
     xs, x = [], 1
@@ -30,22 +30,22 @@ def render(text, width, font=FONT, size=SIZE, track=TRACK, align="centre"):
     w = int(round(x - track)) + 1
     if w > width:
         raise ValueError("%r is %d px wide, slot is %d" % (text, w, width))
-    mask = Image.new("L", (width, HEIGHT), 0)
+    mask = Image.new("L", (width, height), 0)
     d = ImageDraw.Draw(mask)
     left = {"centre": (width - w) // 2, "left": 0, "right": width - w}[align]
-    top = (HEIGHT - 2 - (face.getbbox("A")[3] - face.getbbox("A")[1])) // 2 - face.getbbox("A")[1] + 1
+    top = (height - 2 - (face.getbbox("A")[3] - face.getbbox("A")[1])) // 2 - face.getbbox("A")[1] + 1
     for ch, cx in zip(text, xs):
         d.text((left + cx, top), ch, font=face, fill=255)
     solid = mask.point(lambda c: 255 if c >= 96 else 0)
     ring = solid.filter(ImageFilter.MaxFilter(3))
     rows = []
-    for y in range(HEIGHT):
+    for y in range(height):
         row = []
         for x in range(width):
             c = mask.getpixel((x, y))
             if c >= 96:
                 # Brighter towards the top, like the stock glyphs.
-                shade = FILL_HI - (2 * y) // HEIGHT
+                shade = FILL_HI - (2 * y) // height
                 row.append(max(FILL_LO, min(FILL_HI, shade - (255 - c) // 64)))
             elif ring.getpixel((x, y)):
                 row.append(OUTLINE)

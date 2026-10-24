@@ -1,5 +1,10 @@
 {
  "_doc": "English for the Training pause menu and its situation sub-menu (/DAT1/TRAIN.BIN, overlay at 0x800A2000). Labels are rows of 24x12 cells of the atlas TIM in /DAT2/CEFT3.BIZ (VRAM 768,256); the table at 0x800A2130 points to [piece count] + (col, row, units) triples. tools/localization/patch_training.py redraws the atlas text area and rewrites the labels. 'カード' is how the atlas spells ガード (no ガ glyph).",
+ "hud": {
+  "_doc": "Combo HUD: トータルコンボダメージ / ダメージ. Line 1 is prefix + word, line 2 the word alone, sharing its 3 atlas cells (10 cells of 16x8 in all).",
+  "prefix": "TOTAL COMBO",
+  "word": "DAMAGE"
+ },
  "labels": {
   "メニュー": "MENU",
   "トレーニング続行": "CONTINUE",
