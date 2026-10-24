@@ -6,96 +6,146 @@
 [![GitHub release](https://img.shields.io/github/v/release/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp)](https://github.com/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp/releases/latest)
 <!-- /retcomm-readme-metrics -->
 
-Static recompilation of **Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2** built on
-[psxrecomp](https://github.com/mstan/psxrecomp) and
+Static recompilation of **Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2**
+(Capcom, 1999, Japan only — the PlayStation sequel to *Rival Schools: United by
+Fate*) built on [psxrecomp](https://github.com/mstan/psxrecomp) and
 [recomp-ui](https://github.com/RetroPortingToolKit/recomp-ui).
 
-_Add a short pitch in catalog_identity.json / README._
+This is an owned-input kit. You supply your own SLPS-02120 disc image and your
+own SCPH-1001 BIOS dump; Generate turns them into C code and compiles the game
+on your machine. This repository contains no game disc, no extracted game
+executable, no retail BIOS, no generated game code, and no saved game.
 
 | | |
 |---|---|
-| Players | 2 |
-| Region | Japan |
-| Publisher | Capcom |
-| Year | 1999 |
+| Region | Japan (NTSC-J) |
+| Disc serial | SLPS-02120 |
+| Discs | 1 |
+| Boot executable | `SLPS_021.20` |
+| Supported dump | `Shiritsu Justice Gakuen - Nekketsu Seishun Nikki 2 (Japan).cue` + `.bin`, single data track, 663216960 bytes, MD5 `a7149a13c6992a20732d4ed2fd7e7611` |
+| BIOS | SCPH-1001 (USA), 524288 bytes, SHA-256 `71af94d1e47a68c11e8fdb9f8368040601514a42a5a399cda48c7d3bff1e99d3` |
 
-Scaffolded with the New Project Layout. See
-`psxrecomp/docs/GAME_PROJECT_SETUP.md` for the full flow.
+The supported-dump digests are those of the dump this kit was probed from. They
+have not been cross-checked against the Redump database. The game runs on the
+USA SCPH-1001 BIOS; no Japanese BIOS profile is needed or shipped.
 
-<!-- retcomm-readme-launcher -->
-## Retro Launcher
+## Related kits
 
-You can run this title **standalone** (release zip + the built-in recomp-ui
-Generate & Build flow), or manage installs, updates, ROM/BIOS wiring, and queued
-builds more intuitively with
-**[Retro Launcher](https://github.com/RetroPortingToolKit/Retro-Launcher)** —
-the Retro Compilation Manager hub for self-compiling recomps.
+The two USA *Rival Schools: United by Fate* discs have their own kits:
+[Arcade Disc](https://github.com/alexbeavs-ps1-ports/rival-schools-recomp) and
+[Evolution Disc](https://github.com/alexbeavs-ps1-ports/rival-schools-evolution-recomp).
+This kit uses the same pinned framework and launcher versions.
 
-[Downloads](https://github.com/RetroPortingToolKit/Retro-Launcher/releases) ·
-[Full README & features](https://github.com/RetroPortingToolKit/Retro-Launcher#readme)
+## Building from source
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/RetroPortingToolKit/Retro-Launcher/main/docs/screenshots/hub-and-game-launcher.png" alt="Retro hub with a background build, next to a title’s recomp-ui launcher" width="720">
-</p>
+There is no release package yet. Build it yourself:
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/RetroPortingToolKit/Retro-Launcher/main/docs/screenshots/queue-and-background-build.png" alt="Background cmake build with titles queued" width="720">
-</p>
+1. Clone with submodules:
+   `git clone --recursive <this repository>`
+   (or `git submodule update --init --recursive` in an existing clone).
+2. Put your dump in `disc/` with the exact names
+   `Shiritsu Justice Gakuen - Nekketsu Seishun Nikki 2 (Japan).cue` / `.bin`,
+   and your BIOS at `bios/SCPH1001.BIN`. Both folders are gitignored.
+3. On Windows, open an **MSYS2 MINGW64** shell with these packages installed:
+   `mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+   mingw-w64-x86_64-SDL2 mingw-w64-x86_64-pkgconf mingw-w64-x86_64-vulkan-headers
+   mingw-w64-x86_64-shaderc mingw-w64-x86_64-python`.
+4. Generate the game and BIOS C code:
 
-Retro checks for updates, rebuilds with existing build data when possible,
-shares the portable toolchain used by per-title launchers, and automates
-BIOS/ROM/save plumbing so you are not stuck repeating each game’s wizard by hand.
-<!-- /retcomm-readme-launcher -->
+   ```bash
+   python psxrecomp/psxrecomp_cli.py generate --project-root . --config game.toml \
+     --disc "disc/Shiritsu Justice Gakuen - Nekketsu Seishun Nikki 2 (Japan).cue" \
+     --bios bios/SCPH1001.BIN --bios-stem SCPH1001 \
+     --gen-marker SLPS_021.20_dispatch.c
+   ```
+
+5. Configure and build with the MSYS2 compiler:
+
+   ```bash
+   export VULKAN_SDK=/mingw64
+   cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release \
+     -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+     -DPSXRECOMP_REQUIRE_GAME_C=ON -DPSX_SETUP_WIZARD=ON \
+     -DGLSLC_EXE=/mingw64/bin/glslc.exe
+   cmake --build build-release --target psx-runtime
+   ```
+
+6. Run `build-release/Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2.exe`.
+
+Name the compiler explicitly as above. If a portable `cmake-clang-v1` pack is
+present in the shared toolchain cache, `psxrecomp_cli.py rebuild` may pick it
+up and mix its libc++ headers with the MSYS2 Vulkan include path, which fails
+to compile.
+
+Linux and macOS should work with the same steps and native packages
+(CMake, Ninja, Python 3, a C/C++ compiler, SDL, Vulkan headers, glslc), but
+have not been tried.
+
+## Status
+
+Version 0.1.0, early bring-up.
+
+- Windows: generated, compiled with MSYS2 GCC, and reported running by the
+  maintainer on the first test (October 24, 2026).
+- Full-game completion, every mode, audio fidelity, and multiplayer are not
+  claimed. Seeds are the first-pass boot-executable scan (1267 functions);
+  code loaded later from the disc runs through the framework's runtime paths.
+- The game text is Japanese; no translation is included.
 
 ## Diagnostic mode
 
-If the game crashes, freezes, or misbehaves, switch to the diagnostic build
-that first-run setup already produced (no recompiling): create an empty file
-named `diagnostic-mode.txt` next to `Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2` and start the game as
-usual, or run `Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2 --diagnostic`. Reproduce the problem, quit, then
-run `Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2 --collect-diagnostics`: it writes `diagnostics-<date>.zip`
-next to the exe. Attach that zip to a GitHub issue on this repository with a
-short description of what you did. The zip holds only the runtime's report
-files, never saves, BIOS, or disc images. Delete `diagnostic-mode.txt` to go
-back to normal mode. Details: `psxrecomp/docs/DIAGNOSTIC_MODE.md`.
+If the game crashes, freezes, or misbehaves, build the diagnostic variant from
+the same generated sources (no regeneration needed):
+
+```bash
+cmake -S . -B build-diagnostic -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+  -DPSXRECOMP_REQUIRE_GAME_C=ON -DPSX_DEBUG_TOOLS=ON \
+  -DGLSLC_EXE=/mingw64/bin/glslc.exe
+cmake --build build-diagnostic --target psx-runtime
+```
+
+Run the exe in `build-diagnostic/`, reproduce the problem, quit, and attach the
+report files it leaves next to the exe (`psx_crash.txt`,
+`psx_last_run_report.json`, `psx_freeze_heartbeat.json`,
+`psx_freeze_dump_*.json`) to a GitHub issue with a short description of what
+you did. These files never contain saves, BIOS, or disc images. Details:
+`psxrecomp/docs/DIAGNOSTIC_MODE.md`.
 
 ## Legal
 
-You must own the original game. Disc images under `disc/` are gitignored and
-must never be committed. Retail BIOS dumps are not redistributed; OpenBIOS is
-used for Generate unless you supply your own SCPH locally.
+You must own the original game. Disc images under `disc/`, the boot executable
+extracted there, BIOS dumps under `bios/`, and everything under `generated/`
+are gitignored and must never be committed or redistributed. Retail BIOS dumps
+are not redistributed and OpenBIOS is not shipped: this kit is retail-BIOS-only,
+so Generate needs your own legally dumped SCPH-1001 image.
 
-Default app icon: `assets/psxrecomp.ico` (and `.png` / `.svg`) — Retro-themed controller mark from `psxrecomp/assets/`. Windows builds embed it via `APP_ICON`.
+Default app icon: `assets/psxrecomp.ico` (and `.png` / `.svg`) — Retro-themed
+controller mark from `psxrecomp/assets/`. Windows builds embed it via
+`APP_ICON`.
 
-Optional box art under `launcher_assets/img/` may come from
-[libretro-thumbnails](https://github.com/libretro-thumbnails/libretro-thumbnails)
-(`Named_Boxarts`); see `BOXART_SOURCE.txt` when present.
+Box art is not shipped in this kit or its repository.
 
-## Quick start (dev)
+The framework (`psxrecomp`) is licensed for noncommercial use only. Nothing
+built from this kit may be sold or used commercially.
 
-```bash
-git submodule update --init --recursive
-./psxrecomp/tools/ci/build_emitters.sh
-python3 psxrecomp/psxrecomp_cli.py generate \
-  --config game.toml --project-root . --disc disc/<your>.cue
-cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build-release --target psx-runtime
-```
+## About this project
 
-Zip prefix for CI artifacts: `sjgnsn`.
+This project was developed with AI assistance. AI assists with code,
+documentation, and investigation; the maintainer tests the game and makes
+release decisions. Validation claims describe only the tests actually
+performed.
 
-## Symbols
+## Credits and licenses
 
-Progressive map: `symbols.toml` → `python3 tools/sync_symbols.py` →
-`psx_symbols.h` (`PSX_FN_*`). See `psxrecomp/docs/SYMBOLS.md`.
-
-## Framework pins
-
-Submodule gitlinks (`psxrecomp`, optional `recomp-ui`, nested `recomp-net`)
-are authoritative. `framework_pins.txt` is an optional scaffold snapshot;
-release CI logs SHAs with `record_pins.sh` but builds whatever the gitlinks
-resolve to. Bump submodules deliberately — do not float on `main`/`master`
-in release CI.
+Framework: [psxrecomp](https://github.com/mstan/psxrecomp), built from the
+pinned fork commit named by the `psxrecomp` submodule. Launcher:
+[recomp-ui](https://github.com/RetroPortingToolKit/recomp-ui), pinned by the
+`recomp-ui` submodule. Kit layout follows the Rival Schools kits by Alexbeav.
+This kit's own files are under [LICENSE](LICENSE); third-party notices are in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and the framework and
+launcher licenses remain in their source directories. The original game and
+its trademarks belong to their respective owners.
 
 <!-- retcomm-readme-raid -->
 ---

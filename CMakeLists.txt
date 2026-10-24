@@ -22,6 +22,11 @@ project(Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2 LANGUAGES C CXX)
 # endif()
 set(PSX_SETUP_WIZARD ON CACHE BOOL
     "Advertise first-run setup wizard + Generate & rebuild in recomp-ui" FORCE)
+# Retail-BIOS-only kit: link the SCPH1001 stem (psxrecomp/bios/SCPH1001.toml)
+# and no OpenBIOS payload. Must be set BEFORE include(runtime.cmake).
+set(PSXRECOMP_BIOS_STEMS "SCPH1001" CACHE STRING
+    "Recompiled BIOS stems to link; retail-only kit ships no OpenBIOS payload")
+
 include("${PSXRECOMP_ROOT}/runtime/runtime.cmake")
 
 # This project's own mod catalog. The FRAMEWORK stages it -- together with its
@@ -40,6 +45,7 @@ psxrecomp_add_game_runtime(psx-runtime
     # NETPLAY_LOBBY_URL "ws://netplay.retcomm.net:8765"
     ENABLE_SETUP_WIZARD
     WINDOW_TITLE "Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2"
+    EXE_NAME "Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2"
     DEFAULT_GAME_CONFIG_PATH "game.toml"
     MAX_PLAYERS 2
     # LAUNCHER_BOXART "${CMAKE_CURRENT_SOURCE_DIR}/launcher_assets/img/boxart.tga"
