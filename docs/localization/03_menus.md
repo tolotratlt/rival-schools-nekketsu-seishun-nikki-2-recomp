@@ -120,6 +120,7 @@ overlays `.BIN` sont chargés par secteurs entiers) ; pas de place libre dans l'
 | League / Tournament | `PLSEL3/4.BIN`, `SELP3/4.BIZ` | B2 + A | atlas d'écran sans latin : image + chaînes |
 | 五輪祭 | `MINITTL0/1.BIZ`, `MINISEL.BIN` | A | à faire (image) |
 | Versus / Team / Co-op | (2ᵉ manette requise) | ? | à vérifier |
+| Pause en combat (`1Pポーズ / つづける / モードメニューに戻る`) | EXE `0x8008A070` + `/DAT2/OVER.TIZ` | A (morceaux 24×12) | **traduit** (`patch_pause.py` : `1P PAUSE / CONTINUE / MODE SELECT`) |
 | Titres 40×40 (Options, Sound Test…) | atlas `MENU.BIZ` bloc 3 | A | grandes lettres latines à dessiner |
 
 Méthode pour un nouvel écran : capture + dump VRAM + `dma_cdrom_history`
