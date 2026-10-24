@@ -20,8 +20,8 @@ Preuves locales : `localization/work/menu/`, captures dans `localization/work/ca
 
 | Type | Comment le texte est stocké | Comment traduire | Travail |
 |---|---|---|---|
-| **A. Libellés pré-dessinés** | images TIM 4 bpp dans un fichier `/DAT2/*.BIZ` compressé | redessiner l'image à dimensions identiques, réinjecter le TIM | redessin, réinjection |
-| **B. Atlas d'écran + chaînes d'octets** | atlas de glyphes 20×20 propre à l'écran (TIM dans un `.BIZ`) ; chaînes dans le code de l'écran (`/DAT1/*.BIN`) : `[nombre][col,ligne]×nombre` | ajouter des glyphes latins dans l'atlas (mêmes dimensions) **et** réécrire les chaînes | glyphes latins, chaînes |
+| **A. Libellés pré-dessinés** | images TIM 4 bpp dans un fichier `/DAT2/*.BIZ` compressé | redessiner l'image à dimensions identiques, réinjecter le TIM | texte anglais, redessin, réinjection |
+| **B. Atlas d'écran + chaînes d'octets** | atlas de glyphes 20×20 propre à l'écran (TIM dans un `.BIZ`) ; chaînes dans le code de l'écran (`/DAT1/*.BIN`) : `[nombre][col,ligne]×nombre` | ajouter des glyphes latins dans l'atlas (mêmes dimensions) **et** réécrire les chaînes | texte, chaînes, glyphes latins |
 | **C. Système de dialogue** | répliques u16 dans un bloc script (écran de sauvegarde, oui/non…) | `tools/localization/nsn2script.py` + `nsn2text.py` | texte |
 
 ### A. Libellés pré-dessinés — exemple `MODE SELECT`

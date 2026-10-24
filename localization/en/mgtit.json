@@ -1,0 +1,81 @@
+{
+ "_doc": "English for /DAT1/MGTIT.BIZ (Youth Diary 2 title menu and its memory-card messages). Kind B, common Latin glyphs; keyed by the stock string address because this screen's kanji rows differ from MENU.BIZ. Each slot is [ptr, 0, x, y] in pixels; the patch re-centres translated lines (20 px per glyph, 512 px wide). The stock pool holds 504 bytes and this screen has no spare room, so lines are kept short.",
+ "by_address": {
+  "0x800a2010": {
+   "ja": "入学する",
+   "en": "Enroll",
+   "keep_x": true
+  },
+  "0x800a201c": {
+   "ja": "つづきからはじめる",
+   "en": "Continue",
+   "keep_x": true
+  },
+  "0x800a2030": {
+   "ja": "モードセレクトに戻りますか?",
+   "en": "To Mode Select?"
+  },
+  "0x800a2054": {
+   "ja": "はい  いいえ",
+   "en": "Yes No",
+   "keep_x": true,
+   "why": "'はい' sits in cells 0-1 and 'いいえ' starts at cell 4; 'Yes' + space keeps 'No' at cell 4 where the cursor expects it"
+  },
+  "0x800a2064": {
+   "ja": "メモリーカードをチェックしています。",
+   "en": "Checking card"
+  },
+  "0x800a208c": {
+   "ja": "しばらくお待ちください。",
+   "en": "Please wait"
+  },
+  "0x800a20a8": {
+   "ja": "メモリーカードがささっていません",
+   "en": "No Memory Card"
+  },
+  "0x800a20cc": {
+   "ja": "メモリーカードが壊れています",
+   "en": "Card is damaged"
+  },
+  "0x800a20ec": {
+   "ja": "メモリーカードが初期化されていません",
+   "en": "Card not formatted"
+  },
+  "0x800a2114": {
+   "ja": "ファイルがありません",
+   "en": "No save file"
+  },
+  "0x800a212c": {
+   "ja": "メモリーカードがいっぱいです",
+   "en": "Card is full"
+  },
+  "0x800a214c": {
+   "ja": "セーブするには1ブロック必要です",
+   "en": "Need 1 free block"
+  },
+  "0x800a2170": {
+   "ja": "データがありません",
+   "en": "No data"
+  },
+  "0x800a2184": {
+   "ja": "初期化できませんでした",
+   "en": "Format failed"
+  },
+  "0x800a219c": {
+   "ja": "セーブできませんでした",
+   "en": "Save failed"
+  },
+  "0x800a21b4": {
+   "ja": "ロードできませんでした",
+   "en": "Load failed"
+  },
+  "0x800a21cc": {
+   "ja": "なにかボタンをおしてください",
+   "en": "Press any button"
+  },
+  "0x800a21ec": {
+   "ja": "どのデータではじめますか?",
+   "en": "Load which save?"
+  }
+ }
+}
