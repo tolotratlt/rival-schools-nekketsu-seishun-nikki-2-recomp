@@ -106,7 +106,7 @@ overlays `.BIN` sont chargés par secteurs entiers) ; pas de place libre dans l'
 |---|---|---|---|
 | Titre | `TITLE.BIZ` | A | déjà en anglais |
 | Démarrage / carte mémoire | EXE | B1 | **traduit** (pool EXE) |
-| `MODE SELECT` | `MENU.BIZ` TIM #2, #3-#16 | A | textes anglais rédigés (`menus.json`), image à faire |
+| `MODE SELECT` | `MENU.BIZ` TIM #2, #3-#16 | A | **traduit** (`patch_menu_biz.py` ; Versus, Team, Co-op non vérifiés en jeu : 2ᵉ manette requise) |
 | Options, Game System, test son | `NEWOPT.BIN` | B1 | **traduit** (titres 40×40 restés en japonais) |
 | Records | EXE | B1 | **traduit** |
 | Aide des réglages système | `OPTINFO.TIZ` (5 TIM) | A | à faire (image) |
@@ -125,3 +125,46 @@ Méthode pour un nouvel écran : capture + dump VRAM + `dma_cdrom_history`
 (fichiers chargés) + anneau GP0 (`gpu_frame_dump`) pour voir quelle page VRAM
 dessine le texte ; `wtrace_range` sur un paquet de sprite pour remonter au code
 et à la chaîne (`localization/work/tools/glyphtrace.py`).
+
+## MODE SELECT : préparation des images (24 octobre 2026)
+
+Avec l'accord du propriétaire pour utiliser Pillow dans `gameport`, le script
+`tools/localization/prepare_mode_select_images.py` prépare les images à partir
+de `localization/work/menu/MENU_BIZ.dec` et des textes exacts de `menus.json`.
+Il ne modifie ni le disque, ni l'extraction d'origine.
+
+```powershell
+& 'C:\Users\tolot\.conda\envs\gameport\python.exe' tools/localization/prepare_mode_select_images.py
+```
+
+Sortie locale ignorée : `localization/work/textures/mode_select/en_v1/`.
+Pour une nouvelle génération, choisir un dossier vide avec `--out`.
+
+- `MENU_BIZ_02.png` : atlas 1280 × 256 pixels, 28 libellés et `Points`.
+- `MENU_BIZ_03.png` à `MENU_BIZ_16.png` : descriptions 176 × 112 pixels.
+- Les PNG sont indexés sur 4 bits, avec les indices PS1 conservés. Chaque
+  `.4bpp` associé contient les pixels empaquetés, nibble faible en premier,
+  à placer à l'offset indiqué dans `manifest.json`.
+- `labels_preview.png` et `descriptions_preview_2x.png` sont des planches de
+  contrôle, pas des textures à réinjecter. Les agrandissements concernent
+  uniquement la planche de descriptions.
+
+Contrôles effectués : aller-retour PNG sans changement des indices ni des
+couleurs, mêmes dimensions, aucune modification hors des rectangles de texte
+de l'atlas, conservation des en-têtes TIM et des CLUT, et recompression du
+tampon modifié à **383 296 octets**, suivie d'une décompression identique.
+Les captures GP0 `inventory/e00/00_cursor_gp0.json` montrent une largeur UV
+visible de **166 pixels** pour les descriptions ; le texte reste dans cette
+largeur, sans modifier la texture de 176 pixels.
+
+Les lettres sont dessinées directement à leur taille finale, avec Tahoma Bold
+11/13 pour les libellés et Tahoma 12 pour les descriptions, sans étirement.
+Les CLUT de prévisualisation sont lues dans la source : `0x7881`, `0x789b` et
+`0x7888`. La CLUT du TIM #2 mesure réellement 512 × 2 mots, soit 64 palettes
+de 16 couleurs. Les slots des grands libellés 2, 4, 6, 7 et 8 sont délimités
+par l'atlas source ; les autres ont aussi une confirmation dans les captures
+GP0 existantes.
+
+Réinjection : `python tools/localization/patch_menu_biz.py <stock.bin> <target.bin>`
+(vérifie les empreintes du manifeste, recompresse à 383 296 octets, LBA 28358).
+Validé en jeu le 24 octobre 2026 sur les 11 entrées accessibles à une manette.
