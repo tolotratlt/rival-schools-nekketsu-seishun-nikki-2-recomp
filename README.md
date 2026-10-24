@@ -1,9 +1,9 @@
 # Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2
 
 <!-- retcomm-readme-metrics -->
-[![GitHub downloads (all assets, all releases)](https://img.shields.io/github/downloads/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp/total)](https://github.com/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp/releases)
-[![GitHub downloads (latest release)](https://img.shields.io/github/downloads/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp/latest/total)](https://github.com/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp/releases/latest)
-[![GitHub release](https://img.shields.io/github/v/release/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp)](https://github.com/Tolotra/rival-school-nekketsu-seishun-nikki-2-recomp/releases/latest)
+[![GitHub downloads (all assets, all releases)](https://img.shields.io/github/downloads/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp/total)](https://github.com/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp/releases)
+[![GitHub downloads (latest release)](https://img.shields.io/github/downloads/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp/latest/total)](https://github.com/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp/releases/latest)
+[![GitHub release](https://img.shields.io/github/v/release/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp)](https://github.com/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp/releases/latest)
 <!-- /retcomm-readme-metrics -->
 
 Static recompilation of **Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2**
