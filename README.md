@@ -36,9 +36,26 @@ The two USA *Rival Schools: United by Fate* discs have their own kits:
 [Evolution Disc](https://github.com/alexbeavs-ps1-ports/rival-schools-evolution-recomp).
 This kit uses the same pinned framework and launcher versions.
 
+## Setup
+
+1. Download the Windows setup ZIP (`sjgnsn-<version>-windows-x64.zip`) from
+   [Releases](https://github.com/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp/releases)
+   and extract it into a writable folder.
+2. Install Python 3 if it is not already installed.
+3. Start `Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2.exe`.
+4. In the setup wizard select your disc image (the `.cue`) and your SCPH-1001
+   BIOS file.
+5. Run **Generate & rebuild** and wait for the game to start. The first run
+   generates and compiles the game and takes several minutes.
+
+The wizard uses CMake and Ninja from `PATH` when they are present, otherwise it
+downloads the portable build tools (cmake-clang-v1). Keep the `.cue` and the
+`.bin` it references together. The ZIP contains no game data: no disc image,
+no game executable, no BIOS, and no generated game code.
+
 ## Building from source
 
-There is no release package yet. Build it yourself:
+To build without the setup ZIP:
 
 1. Clone with submodules:
    `git clone --recursive <this repository>`
@@ -86,7 +103,10 @@ have not been tried.
 Version 0.1.0, early bring-up.
 
 - Windows: generated, compiled with MSYS2 GCC, and reported running by the
-  maintainer on the first test (October 24, 2026).
+  maintainer on the first test (October 24, 2026). The 0.1.0 setup ZIP was
+  extracted into a clean folder, generated and compiled with its own tools,
+  and the resulting game was reported running.
+- Linux and macOS: no package is published; not tested.
 - Full-game completion, every mode, audio fidelity, and multiplayer are not
   claimed. Seeds are the first-pass boot-executable scan (1267 functions);
   code loaded later from the disc runs through the framework's runtime paths.
@@ -111,6 +131,36 @@ report files it leaves next to the exe (`psx_crash.txt`,
 `psx_freeze_dump_*.json`) to a GitHub issue with a short description of what
 you did. These files never contain saves, BIOS, or disc images. Details:
 `psxrecomp/docs/DIAGNOSTIC_MODE.md`.
+
+## Packaging a release (maintainers)
+
+Always package from a **fresh clone**. A working tree where Generate has run
+holds generated BIOS and game C, and a setup host configured there links the
+recompiled BIOS into the executable. In an MSYS2 MINGW64 shell with `zip`
+installed:
+
+```bash
+git clone --recursive https://github.com/tolotratlt/rival-schools-nekketsu-seishun-nikki-2-recomp.git rel
+cd rel
+bash psxrecomp/tools/ci/build_emitters.sh --framework psxrecomp --build-dir build-recompiler
+export VULKAN_SDK=/mingw64
+cmake -S . -B build-ci -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+  -DCMAKE_DISABLE_FIND_PACKAGE_Freetype=ON \
+  -DPSXRECOMP_FORCE_SETUP_HOST=ON -DPSXRECOMP_ALLOW_NO_BIOS=ON -DPSX_SETUP_WIZARD=ON \
+  -DPSX_GAME_VERSION="$(cat VERSION)" -DGLSLC_EXE=/mingw64/bin/glslc.exe
+cmake --build build-ci --target psx-runtime
+RELEASE_VERSION="$(cat VERSION)" PSXRECOMP_RUNTIME_BIN_DIR=/mingw64/bin EXCLUDE_DEV_MODS=1 \
+  bash scripts/package_setup_release.sh build-ci windows-x64 build-recompiler
+```
+
+The configure output must say `BIOS backends linked: (none)`. Before
+publishing, remove third-party game images the framework docs carry:
+
+```bash
+zip -d dist/sjgnsn-*-windows-x64.zip 'psxrecomp/docs/assets/games/*' \
+  'psxrecomp/docs/assets/widescreen/*' 'recomp-ui/assets/consoles/genesis/img/boxart_*'
+```
 
 ## Legal
 
