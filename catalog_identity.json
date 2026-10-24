@@ -1,0 +1,48 @@
+{
+  "format_version": 1,
+  "game": {
+    "name": "Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2",
+    "id": "SLPS-02120",
+    "boot_exe": "SLPS_021.20"
+  },
+  "marketing": {
+    "description": "",
+    "publisher": "Capcom",
+    "year": "1999",
+    "region": "Japan",
+    "players": 2
+  },
+  "rom_identity": {
+    "cue_name": "Shiritsu Justice Gakuen - Nekketsu Seishun Nikki 2 (Japan).cue",
+    "bin_name": "Shiritsu Justice Gakuen - Nekketsu Seishun Nikki 2 (Japan).bin",
+    "track_counts": [
+      1
+    ],
+    "require_cue": true,
+    "data_track": {
+      "size": 663216960,
+      "md5": "a7149a13c6992a20732d4ed2fd7e7611",
+      "sha1": "1675dee2c3c59836a1a4923b2c6a6f2b37f79539",
+      "crc32": "d97d0aaa"
+    },
+    "disc_fp": "800d9e4ba8551e760cc580b1e7aee0d7df99b881db1ede1b1f31249654f4964c"
+  },
+  "exe": {
+    "load_address": "0x80010000",
+    "entry_pc": "0x80010008",
+    "text_size": "0x00091000",
+    "stack_base": "0x801FFFF0"
+  },
+  "seeds": {
+    "count": 1267,
+    "source": "boot_exe_jal"
+  },
+  "warnings": [
+    "cue has only 1 TRACK \u2014 Track-01-only dumps fail multi-track netplay/catalog gates; prefer a full Redump cue."
+  ],
+  "notes": [
+    "entry_pc/load_address/text_size/stack_base taken from PS-X EXE header.",
+    "seeds are first-pass boot-EXE JAL targets (+ entry); expect to grow as overlays / runtime paths are discovered.",
+    "required_disc_fp is psxrecomp-toc-v1 (matches runtime DiscIdentity)."
+  ]
+}
