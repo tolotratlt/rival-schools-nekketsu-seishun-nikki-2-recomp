@@ -94,3 +94,30 @@ def pack(labels, cols, rows, align=None):
             x += n
         out.append((pieces, units))
     return out
+
+
+def render_aa(text, width, height, font, size, lo=3, hi=14, align="left"):
+    """Plain anti-aliased text without outline: index 0 is transparent and
+    lo..hi rise in brightness with glyph coverage (the exam menu atlas style).
+    Returns rows of indices; raises ValueError if the text is too wide."""
+    face = ImageFont.truetype(font, size)
+    w = int(face.getlength(text)) + 2
+    if w > width:
+        raise ValueError("%r is %d px wide, slot is %d" % (text, w, width))
+    mask = Image.new("L", (width, height), 0)
+    box = face.getbbox("Ag")
+    top = (height - (box[3] - box[1])) // 2 - box[1]
+    left = {"centre": (width - w) // 2, "left": 1, "right": width - w}[align]
+    ImageDraw.Draw(mask).text((left, top), text, font=face, fill=255)
+    rows = []
+    for y in range(height):
+        row = []
+        for x in range(width):
+            c = mask.getpixel((x, y))
+            row.append(0 if c < 24 else lo + (c * (hi - lo) + 127) // 255)
+        rows.append(row)
+    return rows
+
+
+def text_width(text, font, size):
+    return int(ImageFont.truetype(font, size).getlength(text)) + 2
