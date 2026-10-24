@@ -50,49 +50,84 @@ def encode(text):
     return out
 
 
-def rebuild_pool(buf, base, tables, translate, areas, by_address=None):
+def rebuild_pool(buf, base, tables, translate, areas, by_address=None,
+                 pin_untranslated=False):
     """Rewrite every string referenced by `tables` (lists of (offset, ptr) from
     find_tables) into `areas` [(start_off, end_off), ...] of `buf`, translated
     by `translate(japanese_text) -> text or None` (None keeps the original
     codes). Each distinct source string is written once; every pointer slot is
     updated. `by_address` {stock_ptr: text} overrides the translation of one
     particular stock string (when two identical Japanese strings need
-    different English). Returns the new bytearray and a report of used bytes
-    per area."""
+    different English). With `pin_untranslated`, strings left untranslated keep
+    their stock address (some screens address them by position) and only the
+    translated ones move into the remaining room. Returns the new bytearray
+    and a report (start, used_end, end) per free interval."""
     by_address = by_address or {}
     buf = bytearray(buf)
     src_strings = {}
     for t in tables:
         for off, ptr in t:
             src_strings.setdefault(ptr, read_string(buf, ptr - base))
-    # Clear the areas first so no stale Japanese remains.
+
+    def size4(n_codes):
+        return (2 + 2 * n_codes + 3) & ~3  # strings stay 4-byte aligned like the stock pool
+
+    texts = {ptr: by_address.get(ptr) or translate(decode(codes))
+             for ptr, codes in src_strings.items()}
+    # Free space: the areas minus the strings that stay where they are.
+    pinned = [(ptr - base, ptr - base + size4(len(src_strings[ptr])))
+              for ptr in src_strings if pin_untranslated and texts[ptr] is None]
+    free = []
     for a, b in areas:
-        buf[a:b] = b"\x00" * (b - a)
-    cursor = [a for a, _ in areas]
+        cuts = sorted((s, e) for s, e in pinned if s < b and e > a)
+        pos = a
+        for s, e in cuts:
+            if s > pos:
+                free.append([pos, s])
+            pos = max(pos, e)
+        if pos < b:
+            free.append([pos, b])
+    # Safety: only bytes that belong to a stock string (or are already zero)
+    # may be cleared. A non-zero byte outside every string means an area
+    # bound overlaps neighbouring data.
+    owned = bytearray(len(buf))
+    for ptr, codes in src_strings.items():
+        s = ptr - base
+        owned[s:s + 2 + 2 * len(codes)] = b"\x01" * (2 + 2 * len(codes))
+    for s, e in free:
+        bad = [o for o in range(s, min(e, len(buf))) if buf[o] and not owned[o]]
+        if bad:
+            raise ValueError("area %#x-%#x would clear non-string data at %s"
+                             % (s, e, ", ".join(hex(base + o) for o in bad[:4])))
+        buf[s:e] = b"\x00" * (e - s)  # no stale Japanese left behind
+    start_free = [s for s, _ in free]
+
     new_addr = {}
     by_content = {}  # identical output strings are stored once
     for ptr in sorted(src_strings):
-        codes = src_strings[ptr]
-        text = by_address.get(ptr) or translate(decode(codes))
+        codes, text = src_strings[ptr], texts[ptr]
+        if pin_untranslated and text is None:
+            new_addr[ptr] = ptr
+            continue
         out = codes if text is None else encode(text)
         blob = struct.pack("<H%dH" % len(out), len(out), *out)
         if blob in by_content:
             new_addr[ptr] = by_content[blob]
             continue
-        need = (len(blob) + 3) & ~3  # keep strings 4-byte aligned like the stock pool
-        for k, (a, b) in enumerate(areas):
-            if cursor[k] + need <= b:
-                buf[cursor[k]:cursor[k] + len(blob)] = blob
-                new_addr[ptr] = base + cursor[k]
+        need = size4(len(out))
+        for iv in free:
+            if iv[0] + need <= iv[1]:
+                buf[iv[0]:iv[0] + len(blob)] = blob
+                new_addr[ptr] = base + iv[0]
                 by_content[blob] = new_addr[ptr]
-                cursor[k] += need
+                iv[0] += need
                 break
         else:
             raise ValueError("string pool full while placing %r" % decode(codes))
     for t in tables:
         for off, ptr in t:
             struct.pack_into("<I", buf, off, new_addr[ptr])
-    used = [(a, cursor[k], b) for k, (a, b) in enumerate(areas)]
+    used = [(s0, iv[0], iv[1]) for s0, iv in zip(start_free, free)]
     return buf, used
 
 
