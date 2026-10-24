@@ -42,6 +42,12 @@ fi
 if [[ -f "${ROOT}/game_options.toml" ]]; then
   EXTRA_PROJECT+=(--project-file game_options.toml)
 fi
+# Licence and attribution must ship with a public kit.
+for _legal in LICENSE THIRD_PARTY_NOTICES.md; do
+  if [[ -f "${ROOT}/${_legal}" ]]; then
+    EXTRA_PROJECT+=(--project-file "${_legal}")
+  fi
+done
 # Game-owned C that CMakeLists.txt compiles into the runtime — mod activation
 # plugins live here (CODEGEN_SETUP_SOURCES "src/<game>_mods.c"). Leaving this
 # out ships a CMakeLists that references a file the zip does not contain, so
@@ -63,6 +69,10 @@ fi
 if [[ -d "${ROOT}/assets" ]]; then
   EXTRA_PROJECT+=(--project-dir assets)
 fi
+# Optional launcher artwork; skipped while the directory holds no files.
+if [[ -d "${ROOT}/launcher_assets" ]] &&    find "${ROOT}/launcher_assets" -type f -print -quit | grep -q .; then
+  EXTRA_PROJECT+=(--project-dir launcher_assets)
+fi
 # Generated symbol headers. Game-owned C in src/ includes these by relative
 # path ("../psx_symbols.h"), so they are compile inputs of the shipped tree even
 # though nothing in CMakeLists.txt names them.
@@ -78,7 +88,7 @@ exec bash "${PACKAGER}" \
   --build-dir "${BUILD_DIR}" \
   --artifact "${ARTIFACT_TAG}" \
   --zip-prefix sjgnsn \
-  --exe-name Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2 \
+  --exe-name Shiritsu_Justice_Gakuen__Nekketsu_Seishun_Nikki_2   --omit-openbios \
   --display-name "Shiritsu Justice Gakuen: Nekketsu Seishun Nikki 2" \
   --recompiler-build "${RECOMPILER_BUILD}" \
   --version-env RELEASE_VERSION \
