@@ -148,38 +148,59 @@ def _serialize(items):
 def compress_exact(raw, target_size):
     """Encode `raw` into exactly `target_size` bytes (the stock file size), with
     the end marker in the final bytes, by turning references back into
-    literals until the stream is long enough."""
+    literals (from the end of the stream) until the stream is long enough.
+    Sizes are tracked incrementally, so this stays linear on large files."""
     assert len(raw) % 2 == 0 and target_size % 2 == 0
     words, items = _items(raw)
+    target_words = target_size // 2
 
-    def size(its):
-        return 2 * (sum(len(it[1]) for it in its) + 2 + (len(its) + 1 + 15) // 16)
+    def total(nwords, nitems):
+        # data words + end marker (2 words) + one flag word per 16 items
+        return nwords + 2 + (nitems + 1 + 15) // 16
 
-    if size(items) > target_size:
-        raise ValueError("does not fit: %d > %d" % (size(items), target_size))
-    # Expand references (from the end, so earlier refs stay valid) into literals.
+    nwords = sum(len(it[1]) for it in items)
+    nitems = len(items)
+    if total(nwords, nitems) > target_words:
+        raise ValueError("does not fit: %d > %d bytes"
+                         % (2 * total(nwords, nitems), target_size))
+    split = {}  # item index -> number of trailing words turned into literals
     k = len(items) - 1
-    while size(items) < target_size and k >= 0:
+    while total(nwords, nitems) < target_words and k >= 0:
         it = items[k]
         if it[0]:
-            lits = [[False, [words[it[3] + j]], 1, it[3] + j] for j in range(it[2])]
-            trial = items[:k] + lits + items[k + 1:]
-            if size(trial) <= target_size:
-                items = trial
+            length = it[2]
+            # Full expansion: the ref word becomes `length` literals.
+            if total(nwords + length - 1, nitems + length - 1) <= target_words:
+                split[k] = length
+                nwords += length - 1
+                nitems += length - 1
             else:
-                # Split one word off this reference at a time.
-                while size(items) < target_size and items[k][0] and items[k][2] > 2:
-                    ref = items[k]
-                    ln = ref[2] - 1
-                    dist = ref[1][0] & 0x7FF
-                    shorter = [True, [(ln << 11) | dist], ln, ref[3]]
-                    lit = [False, [words[ref[3] + ln]], 1, ref[3] + ln]
-                    trial = items[:k] + [shorter, lit] + items[k + 1:]
-                    if size(trial) > target_size:
-                        break
-                    items = trial
+                # Peel literals off the end, keeping a reference of length >= 2.
+                j = 0
+                while (length - j - 1 >= 2 and
+                       total(nwords + 1, nitems + 1) <= target_words):
+                    j += 1
+                    nwords += 1
+                    nitems += 1
+                if j:
+                    split[k] = j
         k -= 1
-    out = _serialize(items)
+    if total(nwords, nitems) != target_words:
+        raise ValueError("could not hit exact size: %d vs %d"
+                         % (2 * total(nwords, nitems), target_size))
+    out_items = []
+    for idx, it in enumerate(items):
+        j = split.get(idx, 0)
+        if not j:
+            out_items.append(it)
+            continue
+        length, dist, pos = it[2], it[1][0] & 0x7FF, it[3]
+        keep = length - j
+        if keep:
+            out_items.append([True, [(keep << 11) | dist], keep, pos])
+        for q in range(keep, length):
+            out_items.append([False, [words[pos + q]], 1, pos + q])
+    out = _serialize(out_items)
     if len(out) != target_size:
-        raise ValueError("could not hit exact size: %d vs %d" % (len(out), target_size))
+        raise ValueError("size bookkeeping mismatch: %d vs %d" % (len(out), target_size))
     return out
