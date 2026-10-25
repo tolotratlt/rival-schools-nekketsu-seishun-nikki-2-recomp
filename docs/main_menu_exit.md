@@ -26,12 +26,7 @@ y compris les mots d'appui déjà reçus par le jeu à `0x801F5E00`, `0x801F5E02
 `0x801F5E80` et `0x801F5E82`, lus par MODESEL à partir de `0x800A3FBC`.
 Les autres mouvements restent gérés par le jeu.
 
-Le cadre et les libellés masqués par le sélecteur d'origine sont relus dans
-l'atlas déjà chargé en VRAM, sans embarquer de ressource du jeu dans le kit.
-La nouvelle ligne occupe l'espace sous Options. Les transferts GP0 A0 écrivent
-les deux trames entrelacées, pour éviter de laisser une ligne sur deux de
-l'ancien texte en 480i. L'état de masquage GPU est restauré après le dessin.
-Le rendu est limité à l'écran MODE SELECT 512 × 480.
+Le dessin n'utilise que des commandes GPU ordinaires : rectangles plats (GP0 60h) pour les lettres, sprites texturés (GP0 65h) qui relisent le cadre et les libellés dans l'atlas 4 bpp déjà chargé en VRAM (aucune ressource du jeu dans le kit), et copies VRAM→VRAM (GP0 80h) pour masquer le sélecteur d'origine. Aucune lecture de la VRAM par le CPU ni transfert CPU→VRAM : une lecture oblige les moteurs matériels à rapatrier l'image du GPU, ce qui figeait MODE SELECT sous Vulkan. Pendant le dessin, le dessin dans la zone affichée est autorisé (GP0 E1 bit 10) pour écrire les deux trames du 480i ; la zone de dessin, le décalage, la page de texture et le masque sont ensuite restaurés. La nouvelle ligne occupe l'espace sous Options. Le rendu est limité à l'écran MODE SELECT 512 × 480.
 
 ## Vérification
 

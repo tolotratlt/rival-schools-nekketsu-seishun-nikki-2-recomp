@@ -25,51 +25,68 @@ bool mode_select_active() {
 
 uint32_t xy(unsigned x, unsigned y) { return (y << 16) | x; }
 
-void upload(unsigned x, unsigned y, unsigned w, unsigned h, const uint16_t* data) {
-    gpu_write_gp0(0xa0000000);
-    gpu_write_gp0(xy(x, y));
-    gpu_write_gp0(xy(w, h));
-    for (unsigned i = 0; i < w * h; i += 2)
-        gpu_write_gp0(data[i] | (uint32_t(i + 1 < w * h ? data[i + 1] : 0) << 16));
+// Everything below is drawn with ordinary GPU commands (rectangles, sprites,
+// VRAM-to-VRAM copies), never CPU reads or CPU-to-VRAM transfers: a VRAM read
+// makes the hardware renderers sync the GPU image down, which froze MODE
+// SELECT under Vulkan. Drawing to the display area is allowed while the
+// extension draws (GP0 E1 bit 10), so raster commands write both 480i fields;
+// end_draw() restores the game's drawing state.
+constexpr uint32_t draw_to_display = 1u << 10;
+uint32_t saved_status;
+GpuDrawArea saved_area;
+
+uint32_t texpage_bits(uint32_t status) {
+    // GPUSTAT bits 0-10 match GP0 E1 bits 0-10; GPUSTAT 15 is E1 bit 11.
+    return (status & 0x7ff) | ((status >> 4) & 0x800);
 }
 
+void begin_draw(unsigned x, unsigned y) {
+    saved_status = gpu_read_gpustat();
+    gpu_get_draw_area(&saved_area);
+    gpu_write_gp0(0xe1000000 | texpage_bits(saved_status) | draw_to_display);
+    gpu_write_gp0(0xe3000000 | (y << 10) | x);
+    gpu_write_gp0(0xe4000000 | ((y + 479) << 10) | (x + 511));
+    gpu_write_gp0(0xe5000000);
+    gpu_write_gp0(0xe6000000);
+}
+
+void end_draw() {
+    gpu_write_gp0(0xe1000000 | texpage_bits(saved_status));
+    gpu_write_gp0(0xe3000000 | (saved_area.top << 10) | saved_area.left);
+    gpu_write_gp0(0xe4000000 | (saved_area.bottom << 10) | saved_area.right);
+    gpu_write_gp0(0xe5000000 | ((uint32_t(saved_area.offset_y) & 0x7ff) << 11) |
+                  (uint32_t(saved_area.offset_x) & 0x7ff));
+    gpu_write_gp0(0xe6000000 | ((saved_status >> 11) & 3));
+}
+
+// Hide text by copying one clean row of the panel over every row of the box.
 void restore_panel(unsigned x, unsigned y, unsigned w, unsigned h, unsigned sample_y) {
-    uint16_t pixels[160 * 48];
-    for (unsigned row = 0; row < h; ++row)
-        for (unsigned col = 0; col < w; ++col)
-            pixels[row * w + col] = gpu_vram_peek(x + col, sample_y);
-    upload(x, y, w, h, pixels);
+    for (unsigned row = 0; row < h; ++row) {
+        gpu_write_gp0(0x80000000);
+        gpu_write_gp0(xy(x, sample_y));
+        gpu_write_gp0(xy(x, y + row));
+        gpu_write_gp0(xy(w, 1));
+    }
 }
 
-// Decode stock menu art from its already-loaded 4-bpp VRAM page. No art is
-// embedded in the executable: the frame and translated labels come from disc.
+// Stock menu art from the 4-bpp atlas already in VRAM (texel sx, sy from
+// x 512, y 256), drawn as a sprite with its CLUT. No art is embedded in the
+// executable: the frame and translated labels come from disc.
 void menu_texture(unsigned sx, unsigned sy, unsigned x, unsigned y,
                   unsigned w, unsigned h, unsigned clut) {
-    uint16_t pixels[160 * 48];
-    const unsigned cx = (clut & 63) * 16, cy = clut >> 6;
-    for (unsigned row = 0; row < h; ++row) {
-        for (unsigned col = 0; col < w; ++col) {
-            const unsigned u = sx + col;
-            const uint16_t packed = gpu_vram_peek(512 + u / 4, 256 + sy + row);
-            const unsigned index = (packed >> ((u & 3) * 4)) & 15;
-            const uint16_t color = gpu_vram_peek(cx + index, cy);
-            pixels[row * w + col] = color ? color & 0x7fff : gpu_vram_peek(x + col, y + row);
-        }
-    }
-    upload(x, y, w, h, pixels);
+    const unsigned page = 8 + sx / 256;   // 64-halfword pages from x 512; y 256 page
+    gpu_write_gp0(0xe1000000 | (texpage_bits(saved_status) & ~0x1ffu) | page | 0x10 |
+                  draw_to_display);
+    gpu_write_gp0(0x65000000);   // opaque textured rectangle, raw texture
+    gpu_write_gp0(xy(x, y));
+    gpu_write_gp0((clut << 16) | (sy << 8) | (sx % 256));
+    gpu_write_gp0(xy(w, h));
 }
 
 void rectangle(unsigned x, unsigned y, unsigned w, unsigned h, uint32_t color) {
-    // CPU-to-VRAM transfer writes both interlaced fields. Raster primitives
-    // would leave alternating rows of the old menu visible in 480i mode.
-    const uint32_t pixel = ((color >> 3) & 31) |
-                          ((color >> 6) & 0x3e0) |
-                          ((color >> 9) & 0x7c00);
-    gpu_write_gp0(0xa0000000);
+    gpu_write_gp0(0x60000000 | (color & 0xffffff));   // opaque flat rectangle
     gpu_write_gp0(xy(x, y));
     gpu_write_gp0(xy(w, h));
-    for (unsigned i = 0; i < (w * h + 1) / 2; ++i)
-        gpu_write_gp0(pixel | (pixel << 16));
 }
 
 // New UI lettering, drawn at its final pixel size. Rows are five-bit masks.
@@ -106,10 +123,9 @@ void draw_exit() {
     gpu_get_display_info(&display);
     if (display.disabled || display.depth24 || display.width != 512 || display.height != 480)
         return;
-    const uint32_t status = gpu_read_gpustat();
     const unsigned x = display.display_x, y = display.display_y;
     if (x + 512 > 1024 || y + 480 > 512) return;
-    gpu_write_gp0(0xe6000000);
+    begin_draw(x, y);
     // There is one unused row below Options, inside the original green panel.
     const bool selected = menu.selected();
     restore_panel(x + 40, y + 426, 104, 24, y + 134);
@@ -131,8 +147,7 @@ void draw_exit() {
         rectangle(x + 182, y + 282, 168, 112, 0x68f0ff);
         text(x + 193, y + 321, "QUIT GAME", 2, 0x282828);
     }
-    // Restore the only drawing-environment field touched by this extension.
-    gpu_write_gp0(0xe6000000 | ((status >> 11) & 3));
+    end_draw();
 }
 
 void frame() {
