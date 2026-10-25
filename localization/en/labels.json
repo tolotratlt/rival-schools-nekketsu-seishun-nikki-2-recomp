@@ -1,0 +1,12 @@
+{
+ "_doc": "Pre-drawn labels redrawn in place by tools/localization/patch_labels.py: each entry clears one rectangle of a TIM (texel coordinates relative to the TIM's VRAM origin) and draws the English there, centred, at the same size. The code that shows the label is unchanged.",
+ "files": {
+  "/DAT2/SELP1.BIZ": {
+   "tim": [768, 0],
+   "labels": [
+    {"ja": "基礎のおさらい", "en": "Basics Review", "rect": [880, 112, 140, 20]},
+    {"ja": "'99年度試験", "en": "'99 Exams", "rect": [894, 132, 126, 20]}
+   ]
+  }
+ }
+}
