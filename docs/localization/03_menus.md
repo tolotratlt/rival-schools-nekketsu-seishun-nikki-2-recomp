@@ -85,6 +85,10 @@ outils de `02_dialogue_engine.md` (≤ 19 caractères par ligne, ≤ 4 lignes).
    sur une **copie** du disque (`localization/work/testdisc/`) ; en livraison,
    via un `[[overlay]]` disque d'un paquet de mod.
 
+## Disque de test complet
+
+`python tools/localization/apply_all.py <stock.bin> <target.bin>` copie l'image d'origine puis applique tous les patches (chacun ne lit que l'image d'origine ; ceux qui partagent un fichier n'en écrivent que leurs octets).
+
 ## Formats de chaînes rencontrés
 
 | Format | Où | Encodage d'un glyphe | Fin |

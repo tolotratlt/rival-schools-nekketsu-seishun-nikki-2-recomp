@@ -358,10 +358,11 @@ def main(stock, target, preview=None):
                 if len(blob) > end - o:
                     raise SystemExit("%s message %d: %d bytes, room for %d" % (name, k, len(blob), end - o))
                 data[o:end] = blob.ljust(end - o, b"\xFF")
+                write_bytes(f, lba, o, data[o:end])
+            # Only these byte ranges: patch_pause.py also writes these overlays.
             if name in TASK_FILES:
                 for o, blob in def_bytes.items():
-                    data[o:o + len(blob)] = blob
-            write_bytes(f, lba, 0, data)
+                    write_bytes(f, lba, o, blob)
     print("patched %s (%d pages) and %d overlays" % (CONTAINER, len(pages), len(MESSAGES)))
 
 
