@@ -97,8 +97,10 @@ def main():
     args = parser.parse_args()
     work = (REPO / "localization/work").resolve()
     out = args.out.resolve()
-    if not out.is_relative_to(work):
-        parser.error("Output must remain in localization/work")
+    # Outputs hold game data: inside the repository only the ignored
+    # localization/work tree may receive them (outside it, e.g. a temp dir, is fine).
+    if out.is_relative_to(REPO.resolve()) and not out.is_relative_to(work):
+        parser.error("Output inside the repository must remain in localization/work")
     if out.exists() and any(out.iterdir()):
         parser.error("Output directory is not empty; choose a new version")
     raw = args.source.read_bytes()

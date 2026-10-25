@@ -84,3 +84,6 @@ starvation_dump.jsonl
 
 # Localization work area: extracted game data, VRAM/RAM dumps, captures (never commit)
 /localization/work/
+
+# Private Python environment created by Install-English-Translation.cmd
+/.localization-venv/

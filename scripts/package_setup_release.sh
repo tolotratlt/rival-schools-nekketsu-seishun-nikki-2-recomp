@@ -73,6 +73,22 @@ fi
 if [[ -d "${ROOT}/launcher_assets" ]] &&    find "${ROOT}/launcher_assets" -type f -print -quit | grep -q .; then
   EXTRA_PROJECT+=(--project-dir launcher_assets)
 fi
+# Game-owned runtime extensions (the MODE SELECT Exit entry): CMakeLists.txt
+# compiles runtime/menu_exit.cpp unconditionally.
+if [[ -d "${ROOT}/runtime" ]]; then
+  EXTRA_PROJECT+=(--project-dir runtime)
+fi
+# English translation: the tools and texts that build the translation mod on
+# the player's machine from their own disc (Install-English-Translation.cmd).
+# localization/work holds game data and is never shipped: only these paths.
+if [[ -d "${ROOT}/tools/localization" ]]; then
+  find "${ROOT}/tools/localization" -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null || true
+  EXTRA_PROJECT+=(--project-dir tools/localization --project-dir localization/en)
+  for _loc in localization/menu_atlas.json localization/shop_atlas.json \
+              localization/nsn2_charmap.json Install-English-Translation.cmd; do
+    EXTRA_PROJECT+=(--project-file "${_loc}")
+  done
+fi
 # Generated symbol headers. Game-owned C in src/ includes these by relative
 # path ("../psx_symbols.h"), so they are compile inputs of the shipped tree even
 # though nothing in CMakeLists.txt names them.

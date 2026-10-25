@@ -47,6 +47,12 @@ This kit uses the same pinned framework and launcher versions.
    BIOS file.
 5. Run **Generate & rebuild** and wait for the game to start. The first run
    generates and compiles the game and takes several minutes.
+6. Optional, English translation: quit the game and run
+   `Install-English-Translation.cmd`. It builds an English mod from your own
+   disc image (about a minute, Python 3 required; Pillow is installed into a
+   private `.localization-venv` folder if missing). Start the game again:
+   **English Translation** is listed and enabled in the launcher's Mods tab.
+   Disable it there to play in Japanese.
 
 The wizard uses CMake and Ninja from `PATH` when they are present, otherwise it
 downloads the portable build tools (cmake-clang-v1). Keep the `.cue` and the
@@ -100,7 +106,7 @@ have not been tried.
 
 ## Status
 
-Version 0.1.0, early bring-up.
+Version 0.2.0, early bring-up.
 
 - Windows: generated, compiled with MSYS2 GCC, and reported running by the
   maintainer on the first test (October 24, 2026). The 0.1.0 setup ZIP was
@@ -110,7 +116,14 @@ Version 0.1.0, early bring-up.
 - Full-game completion, every mode, audio fidelity, and multiplayer are not
   claimed. Seeds are the first-pass boot-executable scan (1267 functions);
   code loaded later from the disc runs through the framework's runtime paths.
-- The game text is Japanese; no translation is included.
+- English translation (optional mod built from your disc): MODE SELECT,
+  Options and Key Config, Records, EDIT Entry, the Youth Diary 2 title menu,
+  the battle and Training pause menus, Training, and Exam Drills '99 with
+  Basics Review (menus, report cards, teacher instructions, task prompts).
+  Story dialogue, the character select screen, Extras and the shop, Gorin
+  Fest, and the battle banners stay in Japanese.
+- MODE SELECT has an **Exit** entry below Options that quits the game.
+- The Vulkan renderer is offered in the launcher. OpenGL stays the default.
 
 ## Diagnostic mode
 
