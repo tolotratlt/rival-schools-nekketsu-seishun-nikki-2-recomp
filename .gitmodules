@@ -1,7 +1,7 @@
 [submodule "psxrecomp"]
 	path = psxrecomp
-	url = https://github.com/Alexbeav/psxrecomp.git
-	branch = main
+	url = https://github.com/tolotratlt/psxrecomp.git
+	branch = nsn2/vulkan-fixes
 [submodule "recomp-ui"]
 	path = recomp-ui
 	url = https://github.com/Alexbeav/recomp-ui.git
