@@ -13,7 +13,8 @@ it, hold other words and stay as they are.
 For every page this script clears the message cells, renders each English
 line (Tahoma Bold, stretched 1.5x to match the stock glyphs; {N} copies stock
 cell N, used for button icons) into the next free message cells, redraws the
-title within the stock HUD width (lessons: the byte table at SIKEN.BIN 0xCC0;
+title within the stock HUD width, redraws the lesson task prompts (one
+run each, in the cells after the message) and rewrites their definitions (lessons: the byte table at SIKEN.BIN 0xCC0;
 exams: 160 px), recompresses the entry to its stock size and rewrites the message runs
 in place (never longer than the stock bytes).
 
@@ -41,7 +42,11 @@ MESSAGES = {
     "/DAT1/SIKENGO1.BIN": (0x530, 30, 0), "/DAT1/SIKENGO2.BIN": (0x530, 30, 0),
     "/DAT1/SIKENG21.BIN": (0x39C, 3, 30), "/DAT1/SIKENG22.BIN": (0x39C, 3, 30),
 }
-CELL_W, CELL_H, PER_ROW = 32, 16, 8
+# Lesson task prompts: SIKENGO1/2 hold at 0xECC a table of 30 groups
+# [task list, definition...]; a definition is [prompt id][run count] then the
+# runs, with 0xFF bytes as line breaks (not counted).
+TASK_FILES, TASK_MASTER, LESSONS = ("/DAT1/SIKENGO1.BIN", "/DAT1/SIKENGO2.BIN"), 0xECC, 30
+CELL_W, CELL_H, PER_ROW, CELLS = 32, 16, 8, 128
 MAX_LINE_CELLS = 14
 STRETCH = 1.5
 FONT, SIZE = r"C:\Windows\Fonts\tahomabd.ttf", 13
@@ -195,6 +200,95 @@ def redraw_page(raw, runs, lines, title, title_w):
     return new_runs
 
 
+def read_defs(data):
+    """Per lesson: [(file offset, prompt id, runs, byte length)]."""
+    def u32(o):
+        return struct.unpack_from("<I", data, o)[0]
+    base = u32(TASK_MASTER) & ~0xFFF
+    out = []
+    for k in range(LESSONS):
+        g = u32(TASK_MASTER + 4 * k) - base
+        seq = u32(g) - base
+        defs, a = [], g + 4
+        while seq < u32(a) - base < g:
+            o = u32(a) - base
+            tid, n = data[o], data[o + 1]
+            runs, q = [], o + 2
+            while len([r for r in runs if r]) < n:
+                if data[q] == 0xFF:
+                    runs.append(None)
+                    q += 1
+                else:
+                    runs.append((data[q], data[q + 1]))
+                    q += 2
+            defs.append((o, tid, runs, q - o))
+            a += 4
+        out.append(defs)
+    return out
+
+
+def redraw_tasks(raw, msg_runs, defs, tasks):
+    """Redraw the task prompt cells of a lesson page; returns {offset: bytes}."""
+    tim = psxtim.scan(raw)[0]
+    _, _, words, _, pix = tim["image"]
+    stride = words * 2
+
+    def get(x, y):
+        return (raw[pix + y * stride + x // 2] >> ((x & 1) * 4)) & 15
+
+    def put(x, y, idx):
+        o = pix + y * stride + x // 2
+        sh = (x & 1) * 4
+        raw[o] = (raw[o] & ~(15 << sh) & 0xFF) | (idx << sh)
+
+    def blank(c):
+        x0, y0 = (c % PER_ROW) * CELL_W, (c // PER_ROW) * CELL_H
+        return all(get(x0 + x, y0 + y) == STYLE.back for y in range(CELL_H) for x in range(CELL_W))
+
+    end = max(c for r in msg_runs if r for c in range(r[0], r[0] + r[1])) + 1
+    todo, keep = [], set()
+    for o, tid, runs, length in defs:
+        cells = [c for r in runs if r for c in range(r[0], r[0] + r[1])]
+        if str(tid) in tasks and not all(blank(c) for c in cells):
+            todo.append((o, tid, length))
+        else:
+            keep.update(cells)
+    free0 = [c for c in range(end, CELLS) if c not in keep]
+    for stretch in (STRETCH, 1.25, 1.0):
+        imgs = {tid: text_pixels(tasks[str(tid)][1], CELL_H, SIZE, stretch) for _, tid, _ in todo}
+        need = sum(-(-len(i[0]) // CELL_W) for i in imgs.values())
+        if need <= len(free0):
+            break
+    else:
+        raise SystemExit("task prompts need %d cells, %d free" % (need, len(free0)))
+    for c in free0:
+        x0, y0 = (c % PER_ROW) * CELL_W, (c // PER_ROW) * CELL_H
+        for y in range(CELL_H):
+            for x in range(CELL_W):
+                put(x0 + x, y0 + y, STYLE.back)
+    free, out, placed = list(free0), {}, {}
+    for o, tid, length in todo:
+        if tid not in placed:
+            img = imgs[tid]
+            n = -(-len(img[0]) // CELL_W)
+            if n > MAX_LINE_CELLS:
+                raise SystemExit("prompt %r needs %d cells" % (tasks[str(tid)][1], n))
+            # A prompt takes consecutive cells (one run).
+            start = next((i for i in range(len(free) - n + 1) if free[i + n - 1] - free[i] == n - 1), None)
+            if start is None:
+                raise SystemExit("no %d consecutive free cells for %r" % (n, tasks[str(tid)][1]))
+            use, free = free[start:start + n], free[:start] + free[start + n:]
+            for k, c in enumerate(use):
+                x0, y0 = (c % PER_ROW) * CELL_W, (c // PER_ROW) * CELL_H
+                for y in range(CELL_H):
+                    for x in range(CELL_W):
+                        sx = k * CELL_W + x
+                        put(x0 + x, y0 + y, img[y][sx] if sx < len(img[0]) else STYLE.back)
+            placed[tid] = (use[0], n)
+        out[o] = bytes([tid, 1, placed[tid][0], placed[tid][1]]).ljust(length, b"\0")
+    return out
+
+
 def encode_runs(runs):
     out = bytearray()
     for r in runs:
@@ -228,12 +322,19 @@ def main(stock, target, preview=None):
     while struct.unpack_from("<I", cont, 8 * k)[0]:
         entries.append(struct.unpack_from("<II", cont, 8 * k))
         k += 1
+    with open(os.path.join(REPO, "localization", "en", "testmj.json"), encoding="utf-8") as fh:
+        tasks = json.load(fh)["tasks"]
+    lesson_defs = read_defs(overlays[TASK_FILES[0]][2])
+    assert lesson_defs == read_defs(overlays[TASK_FILES[1]][2])
+    def_bytes = {}
     new_runs = {}
     for i, page in enumerate(pages):
         off, size = entries[i]
         raw = bytearray(nsn2lz.decompress(bytes(cont[off:off + size]))[0])
         title_w = widths[i] if i < len(widths) else EXAM_TITLE_W
         new_runs[i] = redraw_page(raw, page_runs[i], page["en"], page["title"], title_w)
+        if i < LESSONS and any(str(d[1]) in tasks for d in lesson_defs[i]):
+            def_bytes.update(redraw_tasks(raw, page_runs[i], lesson_defs[i], tasks))
         if preview:
             tim = psxtim.scan(raw)[0]
             pix = tim["image"][4]
@@ -257,6 +358,9 @@ def main(stock, target, preview=None):
                 if len(blob) > end - o:
                     raise SystemExit("%s message %d: %d bytes, room for %d" % (name, k, len(blob), end - o))
                 data[o:end] = blob.ljust(end - o, b"\xFF")
+            if name in TASK_FILES:
+                for o, blob in def_bytes.items():
+                    data[o:o + len(blob)] = blob
             write_bytes(f, lba, 0, data)
     print("patched %s (%d pages) and %d overlays" % (CONTAINER, len(pages), len(MESSAGES)))
 
