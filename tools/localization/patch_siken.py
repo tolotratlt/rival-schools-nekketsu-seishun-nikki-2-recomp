@@ -11,7 +11,9 @@ the atlas: the whole 0x0D page (only the lesson names, all translated) and
 the empty lower half of the 0x0E page. A translated string is rewritten in
 place as one record (plus the stock digit record for 'Exam N'), which is
 never longer than the Japanese, so no pointer moves. The big title strip is
-redrawn where it was. Both .BIZ files are recompressed to their stock sizes.
+redrawn where it was. The same .BIZ files hold the report card images, so
+their boxes from images.json (patch_images.redraw) are applied here too. Both
+.BIZ files are recompressed to their stock sizes.
 
 Usage: python patch_siken.py <stock.bin> <target.bin>
 """
@@ -26,6 +28,7 @@ import pausefont  # noqa: E402
 import psxtim  # noqa: E402
 from patch_newopt import iso_files  # noqa: E402
 from patch_pause import read_file, write_file  # noqa: E402
+import patch_images  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 ATLAS_FILES = ["/DAT2/SIKEN1.BIZ", "/DAT2/SIKEN10.BIZ"]
@@ -148,6 +151,8 @@ def main(stock, target):
             data = bytes([len(new)]) + b"".join(bytes(r) for r in new)
             code[o:o + 1 + 5 * len(old)] = data.ljust(1 + 5 * len(old), b"\0")
 
+    with open(os.path.join(REPO, "localization", "en", "images.json"), encoding="utf-8") as fh:
+        images = json.load(fh)["files"]
     with open(target, "r+b") as f:
         for name in ATLAS_FILES:
             lba, size, _ = atlases[name]
@@ -156,6 +161,10 @@ def main(stock, target):
                 bytes(atlases[ATLAS_FILES[0]][2]))[0][pix:pix + stride * height]
             out = bytearray(stock_raw)
             out[pix:pix + stride * height] = raw[pix:pix + stride * height]
+            if name in images:   # the report card painted in the same file
+                img = images[name]
+                card = [t for t in psxtim.scan(out) if t["offset"] == int(img["tim_offset"], 16)][0]
+                patch_images.redraw(out, card, img["boxes"], img["paper_box"])
             packed = nsn2lz.compress_exact(bytes(out), size)
             assert nsn2lz.decompress(packed)[0] == bytes(out)
             write_file(f, lba, packed)

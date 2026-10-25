@@ -1,0 +1,33 @@
+{
+ "_doc": "Text painted into 8 bpp full-screen images, redrawn by tools/localization/patch_images.py. Each entry names a compressed file, the offset of the TIM in the decompressed data and boxes [x, y, w, h] in pixels: dark ink inside a box is replaced by the paper around it, then the English is drawn centred in the ink colour of the box (plus an optional drop shadow), mapped to the nearest palette colours. '\\n' splits a box into lines.",
+ "files": {
+  "/DAT2/SIKEN10.BIZ": {
+   "tim_offset": "0x55000",
+   "_what": "Exam Drills '99 report card",
+   "paper_box": [387, 279, 48, 26],
+   "boxes": [
+    {"ja": "「'99年度試験」 成績表", "en": "'99 Exams Report Card", "box": [90, 176, 330, 62], "size": 24, "shadow": true},
+    {"ja": "試験", "en": "Exam", "box": [76, 245, 122, 30], "size": 18},
+    {"ja": "最高記録", "en": "Best Record", "box": [200, 245, 183, 30], "size": 18},
+    {"ja": "判定", "en": "Result", "box": [385, 245, 51, 30], "size": 14},
+    {"ja": "1学期期末試験", "en": "1st Term Final", "box": [76, 277, 122, 30], "size": 15},
+    {"ja": "2学期期末試験", "en": "2nd Term Final", "box": [76, 309, 122, 30], "size": 15},
+    {"ja": "学年末試験", "en": "Year-End", "box": [76, 341, 122, 30], "size": 17},
+    {"ja": "のこり TIME", "en": "TIME\nLEFT", "box": [201, 277, 42, 28], "size": 11},
+    {"ja": "回", "en": "times", "box": [282, 309, 48, 30], "size": 16},
+    {"ja": "ボタン-戻る", "en": "Back", "box": [355, 381, 85, 24], "size": 15}
+   ]
+  },
+  "/DAT2/SIKEN1.BIZ": {
+   "tim_offset": "0x55000",
+   "_what": "Basics Review report card",
+   "paper_box": [174, 214, 48, 28],
+   "boxes": [
+    {"ja": "「基礎のおさらい」成績表", "en": "Basics Review Report Card", "box": [95, 95, 320, 45], "size": 24, "shadow": true},
+    {"ja": "達成率", "en": "Completion", "box": [190, 141, 120, 34], "size": 20},
+    {"ja": "試験/科目", "en": "Exam/Subj", "box": [76, 181, 95, 30], "size": 15},
+    {"ja": "ボタン-戻る", "en": "Back", "box": [355, 407, 85, 24], "size": 15}
+   ]
+  }
+ }
+}
