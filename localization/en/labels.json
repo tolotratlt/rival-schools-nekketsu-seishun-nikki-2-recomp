@@ -1,11 +1,18 @@
 {
- "_doc": "Pre-drawn labels redrawn in place by tools/localization/patch_labels.py: each entry clears one rectangle of a TIM (texel coordinates relative to the TIM's VRAM origin) and draws the English there, centred, at the same size. The code that shows the label is unchanged.",
+ "_doc": "Pre-drawn labels redrawn in place by tools/localization/patch_labels.py: each entry clears one rectangle of a TIM (texel coordinates relative to the TIM's VRAM origin) and draws the English there, centred, at the same size; an entry with 'pieces' is one outlined text cut into several sprites. The code that shows the label is unchanged.",
  "files": {
   "/DAT2/SELP1.BIZ": {
    "tim": [768, 0],
    "labels": [
     {"ja": "基礎のおさらい", "en": "Basics Review", "rect": [880, 112, 140, 20]},
     {"ja": "'99年度試験", "en": "'99 Exams", "rect": [894, 132, 126, 20]}
+   ]
+  },
+  "/DAT2/CEFT4.BIZ": {
+   "tim": [768, 256],
+   "_what": "Lesson / exam HUD: 科目 is two 24x16 sprites drawn 20 px apart (u 184, v 96 and v 112)",
+   "labels": [
+    {"ja": "科目", "en": "Subj.", "size": [44, 16], "pieces": [[184, 96, 24, 16, 0], [184, 112, 24, 16, 20]]}
    ]
   }
  }

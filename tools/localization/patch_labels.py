@@ -4,8 +4,11 @@ TIM in place inside a disc image.
 For each compressed file, the TIM whose VRAM origin matches "tim" gets every
 "rect" ([x, y, w, h] in 4 bpp texels from the TIM origin) cleared and the
 English drawn centred in it with the plain anti-aliased style (index 0
-transparent, 3..14 rising with coverage). Sizes never change, so the code that
-draws the label needs no edit. The file is recompressed to its stock size.
+transparent, 3..14 rising with coverage). A label with "pieces" is instead
+rendered once in the outlined style (pausefont.render) and cut into the
+listed sprite rectangles ([x, y, w, h, x in the text]). Sizes never change,
+so the code that draws the label needs no edit. The file is recompressed to
+its stock size.
 
 Usage: python patch_labels.py <stock.bin> <target.bin>
 """
@@ -38,14 +41,26 @@ def main(stock, target):
             tim = [t for t in psxtim.scan(raw) if list(t["image"][:2]) == entry["tim"]][0]
             _, _, words, _, pix = tim["image"]
             stride = words * 2
+            def put(x, y, idx):
+                o = pix + y * stride + x // 2
+                sh = (x & 1) * 4
+                raw[o] = (raw[o] & ~(15 << sh) & 0xFF) | (idx << sh)
+
             for label in entry["labels"]:
+                if "pieces" in label:
+                    # One outlined text cut into sprites: [x, y, w, h, x in the text].
+                    w, h = label["size"]
+                    img = pausefont.render(label["en"], w, height=h, align="left")
+                    for x0, y0, pw, ph, sx in label["pieces"]:
+                        for y in range(ph):
+                            for x in range(pw):
+                                put(x0 + x, y0 + y, img[y][sx + x] if y < h and sx + x < w else 0)
+                    continue
                 x0, y0, w, h = label["rect"]
                 img = pausefont.render_aa(label["en"], w, h, FONT, SIZE, align="centre")
                 for y in range(h):
                     for x in range(w):
-                        o = pix + (y0 + y) * stride + (x0 + x) // 2
-                        sh = ((x0 + x) & 1) * 4
-                        raw[o] = (raw[o] & ~(15 << sh) & 0xFF) | (img[y][x] << sh)
+                        put(x0 + x, y0 + y, img[y][x])
             packed = nsn2lz.compress_exact(bytes(raw), size)
             assert nsn2lz.decompress(packed)[0] == bytes(raw)
             write_file(f, lba, packed)
