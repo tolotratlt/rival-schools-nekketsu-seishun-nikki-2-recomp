@@ -44,6 +44,7 @@ overlay_cache = true
 [video]
 renderer = "opengl"
 aspect_ratio = "4:3"
+offer_vulkan = true       # show Vulkan in the launcher (being validated)
 
 [controller]
 default_mode = "digital"
